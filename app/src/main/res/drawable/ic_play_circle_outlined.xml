@@ -1,0 +1,14 @@
+<!--
+  Google Material Design Icons, play_circle_outline, outlined, 24px.
+  Source: https://github.com/google/material-design-icons/blob/e083cc60a0828fdd3b404cea0cb8a5b900e9c23e/src/av/play_circle_outline/materialiconsoutlined/24px.svg
+  Licensed under Apache License 2.0. See res/raw/material_design_icons_license.txt.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M10,16.5l6,-4.5 -6,-4.5zM12,2C6.48,2 2,6.48 2,12s4.48,10 10,10 10,-4.48 10,-10S17.52,2 12,2zM12,20c-4.41,0 -8,-3.59 -8,-8s3.59,-8 8,-8 8,3.59 8,8 -3.59,8 -8,8z" />
+</vector>

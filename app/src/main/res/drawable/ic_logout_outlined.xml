@@ -1,0 +1,14 @@
+<!--
+  Google Material Design Icons, logout, outlined, 24px.
+  Source: https://github.com/google/material-design-icons/blob/e083cc60a0828fdd3b404cea0cb8a5b900e9c23e/src/action/logout/materialiconsoutlined/24px.svg
+  Licensed under Apache License 2.0. See res/raw/material_design_icons_license.txt.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M17,8l-1.41,1.41L17.17,11H9v2h8.17l-1.58,1.58L17,16l4,-4L17,8zM5,5h7V3H5C3.9,3 3,3.9 3,5v14c0,1.1 0.9,2 2,2h7v-2H5V5z" />
+</vector>

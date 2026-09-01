@@ -1,0 +1,48 @@
+package com.qixuan.channelvideoflow.feature.video
+
+import com.qixuan.channelvideoflow.model.video.DEFAULT_VIDEO_FEED_ORDER
+import com.qixuan.channelvideoflow.model.video.IndexedVideo
+import com.qixuan.channelvideoflow.model.video.VideoFeedOrder
+import com.qixuan.channelvideoflow.model.video.VideoKey
+import com.qixuan.channelvideoflow.player.VideoPlayerSnapshot
+
+enum class VideoFeedPhase {
+    LOADING,
+    EMPTY,
+    CONTENT,
+}
+
+data class FeedVideoItem(
+    val video: IndexedVideo,
+    val channelTitle: String,
+)
+
+sealed interface OriginalMessageLinkUiState {
+    data object Idle : OriginalMessageLinkUiState
+    data object Loading : OriginalMessageLinkUiState
+    data class Unavailable(
+        val message: String,
+    ) : OriginalMessageLinkUiState
+}
+
+data class VideoPlaybackUiState(
+    val phase: VideoFeedPhase = VideoFeedPhase.LOADING,
+    val items: List<FeedVideoItem> = emptyList(),
+    val upcomingItems: List<FeedVideoItem> = emptyList(),
+    val order: VideoFeedOrder = DEFAULT_VIDEO_FEED_ORDER,
+    val queueGeneration: Long = 0L,
+    val randomRoundStartPagerPage: Int? = null,
+    val currentPage: Int = 0,
+    val player: VideoPlayerSnapshot = VideoPlayerSnapshot(),
+    val showSwipeHint: Boolean = false,
+    val originalMessageLink: OriginalMessageLinkUiState = OriginalMessageLinkUiState.Idle,
+)
+
+/** High-frequency playback values collected only by the progress control. */
+data class VideoPlaybackProgressUiState(
+    val key: VideoKey? = null,
+    val positionMillis: Long = 0L,
+    val durationMillis: Long = 0L,
+    val bufferedPositionMillis: Long = 0L,
+    val isSeekable: Boolean = false,
+)

@@ -1,0 +1,81 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "4ac6006c0faae98308fc916cc09267bb",
+    "entities": [
+      {
+        "tableName": "channels",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`chat_id` INTEGER NOT NULL, `title` TEXT NOT NULL, `username` TEXT, `is_selected` INTEGER NOT NULL, `last_new_message_id` INTEGER, `oldest_scanned_message_id` INTEGER, `initial_scan_completed` INTEGER NOT NULL, `last_sync_time` INTEGER, `access_state` TEXT NOT NULL, `scan_state` TEXT NOT NULL, PRIMARY KEY(`chat_id`))",
+        "fields": [
+          {
+            "fieldPath": "chatId",
+            "columnName": "chat_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "username",
+            "columnName": "username",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "isSelected",
+            "columnName": "is_selected",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastNewMessageId",
+            "columnName": "last_new_message_id",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "oldestScannedMessageId",
+            "columnName": "oldest_scanned_message_id",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "initialScanCompleted",
+            "columnName": "initial_scan_completed",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lastSyncTime",
+            "columnName": "last_sync_time",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "accessState",
+            "columnName": "access_state",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "scanState",
+            "columnName": "scan_state",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "chat_id"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '4ac6006c0faae98308fc916cc09267bb')"
+    ]
+  }
+}

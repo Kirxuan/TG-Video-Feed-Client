@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- English is the fallback for every non-Chinese system locale. -->
+    <string name="app_name">VELORA</string>
+    <string name="brand_name">VELORA</string>
+    <string name="brand_slogan">VELORA — Let Content Flow.</string>
+    <string name="creator_name">Kirxuan</string>
+    <string name="creator_credit">Created by %1$s</string>
+</resources>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">曜流</string>
+    <string name="brand_name">曜流</string>
+    <string name="brand_slogan">曜流，让精彩自然流动</string>
+    <string name="creator_name">麒轩</string>
+    <string name="creator_credit">创造者：%1$s</string>
+</resources>

@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 1.0 keeps the existing product UI in Chinese; only brand resources are localized. -->
+    <string name="login_title" translatable="false">Telegram 授权</string>
+    <string name="login_unconfigured" translatable="false">未配置开发凭证</string>
+    <string name="login_initializing" translatable="false">初始化中</string>
+    <string name="login_phone_number" translatable="false">手机号</string>
+    <string name="login_code" translatable="false">验证码</string>
+    <string name="login_code_sent_to" translatable="false">验证码已发送至：%1$s</string>
+    <string name="login_code_resend_countdown" translatable="false">%1$d 秒后可改用：%2$s</string>
+    <string name="login_code_resend_available" translatable="false">现在可改用：%1$s</string>
+    <string name="login_code_resend" translatable="false">重新发送验证码</string>
+    <string name="login_code_delivery_telegram" translatable="false">另一台已登录设备的 Telegram 服务消息</string>
+    <string name="login_code_delivery_sms" translatable="false">短信</string>
+    <string name="login_code_delivery_sms_word" translatable="false">短信中的单词</string>
+    <string name="login_code_delivery_sms_phrase" translatable="false">短信中的短语</string>
+    <string name="login_code_delivery_call" translatable="false">语音电话</string>
+    <string name="login_code_delivery_flash_call" translatable="false">闪拨来电</string>
+    <string name="login_code_delivery_missed_call" translatable="false">未接来电号码末位</string>
+    <string name="login_code_delivery_fragment" translatable="false">Fragment</string>
+    <string name="login_code_delivery_firebase_android" translatable="false">官方 Telegram Android 验证</string>
+    <string name="login_code_delivery_firebase_ios" translatable="false">官方 Telegram iOS 验证</string>
+    <string name="login_code_delivery_unknown" translatable="false">Telegram 指定渠道</string>
+    <string name="login_password" translatable="false">两步验证密码</string>
+    <string name="login_submit" translatable="false">提交</string>
+    <string name="login_retry" translatable="false">重试</string>
+    <string name="login_authorized" translatable="false">已登录</string>
+    <string name="login_logout" translatable="false">退出登录</string>
+    <string name="login_logging_out" translatable="false">退出中</string>
+    <string name="login_closing" translatable="false">关闭中</string>
+    <string name="login_invalid_phone" translatable="false">手机号错误</string>
+    <string name="login_invalid_code" translatable="false">验证码错误</string>
+    <string name="login_invalid_password" translatable="false">密码错误</string>
+    <string name="login_network_error" translatable="false">网络错误</string>
+    <string name="login_flood_wait" translatable="false">请在 %1$d 秒后重试</string>
+    <string name="login_request_rejected" translatable="false">请求被拒绝：%1$d</string>
+    <string name="login_unknown_error" translatable="false">未知错误</string>
+    <string name="login_native_library_error" translatable="false">原生库加载失败</string>
+    <string name="login_tdlib_initialization_error" translatable="false">TDLib 初始化失败</string>
+    <string name="login_database_error" translatable="false">数据库错误</string>
+    <string name="login_unsupported" translatable="false">不支持当前授权步骤</string>
+    <string name="login_registration_unsupported" translatable="false">新账号注册不支持</string>
+    <string name="channels_title" translatable="false">选择频道</string>
+    <string name="channels_search" translatable="false">搜索频道</string>
+    <string name="channels_search_clear" translatable="false">清除频道搜索</string>
+    <string name="channels_selected_count" translatable="false">已选择 %1$d 个频道</string>
+    <string name="channels_pin_hint_compact" translatable="false">保存项自动置顶</string>
+    <string name="channels_pin_hint" translatable="false">已保存的选中频道会自动置顶；长按频道可切换手动置顶</string>
+    <string name="channels_pin_details_show" translatable="false">说明</string>
+    <string name="channels_pin_details_hide" translatable="false">收起</string>
+    <string name="channels_pinned" translatable="false">已手动置顶</string>
+    <string name="channels_pinned_compact" translatable="false">置顶</string>
+    <string name="channels_pin" translatable="false">置顶频道</string>
+    <string name="channels_unpin" translatable="false">取消频道置顶</string>
+    <string name="channels_loading" translatable="false">正在加载频道</string>
+    <string name="channels_refreshing" translatable="false">正在刷新频道</string>
+    <string name="channels_empty" translatable="false">没有可用频道。仅显示已加入且仍有访问权限的频道。</string>
+    <string name="channels_search_empty" translatable="false">没有匹配的频道</string>
+    <string name="channels_retry" translatable="false">重试</string>
+    <string name="channels_save" translatable="false">保存选择</string>
+    <string name="channels_saving" translatable="false">正在保存选择</string>
+    <string name="channels_saved" translatable="false">已保存 %1$d 个频道</string>
+    <string name="channels_save_failed" translatable="false">保存失败，请重试</string>
+    <string name="channels_network_error" translatable="false">网络不可用，无法刷新频道</string>
+    <string name="channels_flood_wait" translatable="false">Telegram 要求等待 %1$d 秒后再试</string>
+    <string name="channels_telegram_error" translatable="false">Telegram 拒绝了频道请求：%1$d</string>
+    <string name="channels_timeout" translatable="false">频道请求超时，请重试</string>
+    <string name="channels_database_error" translatable="false">频道数据库发生错误</string>
+    <string name="channels_unknown_error" translatable="false">无法加载频道，请重试</string>
+    <string name="channels_action_logout" translatable="false">退出登录</string>
+    <string name="channels_action_cache" translatable="false">缓存设置</string>
+    <string name="channels_action_browse" translatable="false">浏览视频</string>
+    <string name="channels_action_logout_icon" translatable="false">退出登录</string>
+    <string name="channels_action_cache_icon" translatable="false">缓存设置</string>
+    <string name="channels_action_browse_icon" translatable="false">浏览视频</string>
+    <string name="channels_action_browse_disabled" translatable="false">尚未索引到视频，浏览视频暂不可用</string>
+    <string name="video_test_open" translatable="false">浏览视频</string>
+    <string name="channels_scan_waiting_selection" translatable="false">保存频道选择后开始建立视频索引</string>
+    <string name="channels_scan_summary_processed" translatable="false">处理视频 %1$d 个</string>
+    <string name="channels_scan_summary_indexed" translatable="false">已索引 %1$d 个</string>
+    <string name="channels_scan_stat_processed" translatable="false">已处理视频</string>
+    <string name="channels_scan_stat_pages" translatable="false">搜索页数</string>
+    <string name="channels_scan_stat_indexed" translatable="false">唯一索引</string>
+    <string name="channels_scan_stat_completed" translatable="false">完整频道</string>
+    <string name="channels_scan_stat_count_value" translatable="false">%1$d 个</string>
+    <string name="channels_scan_stat_page_value" translatable="false">%1$d 页</string>
+    <string name="channels_scan_stat_completed_value" translatable="false">%1$d / %2$d</string>
+    <string name="channels_scan_approximate_hint" translatable="false">Telegram 估计约 %1$d 个视频，仅供参考</string>
+    <string name="channels_scan_details_show" translatable="false">详情</string>
+    <string name="channels_scan_details_hide" translatable="false">收起</string>
+    <string name="channels_scan_pause" translatable="false">暂停</string>
+    <string name="channels_scan_resume" translatable="false">继续</string>
+    <string name="channels_scan_not_started" translatable="false">未开始</string>
+    <string name="channels_scan_scanning" translatable="false">扫描中</string>
+    <string name="channels_scan_paused" translatable="false">已暂停</string>
+    <string name="channels_scan_completed" translatable="false">已完成</string>
+    <string name="channels_scan_error" translatable="false">扫描错误</string>
+    <string name="channels_scan_channel_progress_primary" translatable="false">%1$s · 已处理 %2$d 个视频</string>
+    <string name="channels_scan_channel_progress_secondary" translatable="false">搜索 %1$d 页 · 已索引 %2$d 个</string>
+    <string name="channels_scan_network_error" translatable="false">网络不可用，视频索引扫描已暂停</string>
+    <string name="channels_scan_flood_wait" translatable="false">Telegram 要求等待 %1$d 秒，期间不会发出扫描请求</string>
+    <string name="channels_scan_telegram_error" translatable="false">Telegram 拒绝了视频搜索请求：%1$d</string>
+    <string name="channels_scan_access_lost" translatable="false">频道访问权限已失效，扫描已停止</string>
+    <string name="channels_scan_timeout" translatable="false">视频搜索请求超时，扫描将在有界重试后停止</string>
+    <string name="channels_scan_database_error" translatable="false">视频索引数据库发生错误</string>
+    <string name="channels_scan_pagination_stalled" translatable="false">视频搜索分页游标停滞；已保留索引，可手动继续重试</string>
+    <string name="channels_scan_unknown_error" translatable="false">视频索引扫描发生错误</string>
+    <string name="cache_open" translatable="false">播放与缓存</string>
+    <string name="cache_back" translatable="false">返回</string>
+    <string name="cache_title" translatable="false">播放与缓存</string>
+    <string name="video_quality_title" translatable="false">视频清晰度</string>
+    <string name="video_quality_summary" translatable="false">使用 Telegram 已提供的服务端版本；没有安全可用的低清版本时自动回退原画。</string>
+    <string name="video_quality_auto" translatable="false">自动</string>
+    <string name="video_quality_auto_summary" translatable="false">Wi‑Fi 最高选择 720p；移动网络及其他网络选择最省流版本</string>
+    <string name="video_quality_data_saver" translatable="false">省流</string>
+    <string name="video_quality_data_saver_summary" translatable="false">选择分辨率最低的 H.264 服务端版本</string>
+    <string name="video_quality_720p" translatable="false">720p</string>
+    <string name="video_quality_720p_summary" translatable="false">选择不高于 720p 的最高可用 H.264 服务端版本</string>
+    <string name="video_quality_original" translatable="false">原画</string>
+    <string name="video_quality_original_summary" translatable="false">始终播放消息原始视频文件</string>
+    <string name="cache_usage" translatable="false">当前视频缓存：%1$s%2$s</string>
+    <string name="cache_usage_estimate" translatable="false">（启动估算）</string>
+    <string name="cache_refresh" translatable="false">刷新占用</string>
+    <string name="cache_limit_title" translatable="false">缓存上限</string>
+    <string name="cache_mobile_preload" translatable="false">允许移动数据预加载</string>
+    <string name="cache_mobile_preload_summary" translatable="false">默认关闭；Wi‑Fi 下允许仅预加载下一条</string>
+    <string name="cache_clear" translatable="false">手动清空视频缓存</string>
+    <string name="cache_clear_confirm_title" translatable="false">清空视频缓存？</string>
+    <string name="cache_clear_confirm_body" translatable="false">将停止预加载和当前播放，只删除 TDLib 私有视频缓存。登录状态、频道索引、视频元数据、标签索引和应用设置会保留。</string>
+    <string name="cache_clear_confirm" translatable="false">确认清空</string>
+    <string name="cache_clear_cancel" translatable="false">取消</string>
+    <string name="cache_trimmed" translatable="false">已自动释放 %1$s</string>
+    <string name="cache_cleared" translatable="false">已释放 %1$s；索引和设置已保留</string>
+    <string name="cache_partial" translatable="false">已释放 %1$s，仍占用 %2$s；受保护文件或删除失败将在稍后重试</string>
+    <string name="cache_failed" translatable="false">缓存操作失败，请重试</string>
+
+    <string name="tags_title" translatable="false">标签筛选</string>
+    <string name="tags_back" translatable="false">返回频道选择</string>
+    <string name="tags_search" translatable="false">搜索标签</string>
+    <string name="tags_search_icon" translatable="false">搜索标签</string>
+    <string name="tags_search_clear" translatable="false">清除搜索</string>
+    <string name="tags_match_summary" translatable="false">任一标签：匹配任意一个；全部标签：需同时匹配。频道与标签始终为 AND。</string>
+    <string name="tags_mode_any" translatable="false">任一标签</string>
+    <string name="tags_mode_all" translatable="false">全部标签</string>
+    <string name="tags_selected_count" translatable="false">已选择 %1$d 个标签</string>
+    <string name="tags_visible_count" translatable="false">显示 %1$d/%2$d</string>
+    <string name="tags_clear_selection" translatable="false">清除选择</string>
+    <string name="tags_loading" translatable="false">正在加载标签</string>
+    <string name="tags_missing_channels_title" translatable="false">尚未选择频道</string>
+    <string name="tags_missing_channels_message" translatable="false">请返回频道页，至少选择一个频道后再筛选。</string>
+    <string name="tags_return_channels" translatable="false">返回频道选择</string>
+    <string name="tags_empty_title" translatable="false">暂无标签</string>
+    <string name="tags_empty_message" translatable="false">已选频道尚未索引到标签，可以直接浏览全部视频。</string>
+    <string name="tags_no_results_title" translatable="false">没有匹配的标签</string>
+    <string name="tags_no_results_message" translatable="false">尝试更换关键词，或清除搜索查看全部已加载标签。</string>
+    <string name="tags_video_count" translatable="false">%1$d 个视频</string>
+    <string name="tags_browse_all" translatable="false">浏览全部视频</string>
+    <string name="tags_apply_and_browse" translatable="false">应用筛选并浏览</string>
+</resources>
