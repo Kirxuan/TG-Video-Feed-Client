@@ -1,6 +1,7 @@
 package com.qixuan.channelvideoflow.config
 
 import com.qixuan.channelvideoflow.telegram.config.TelegramCredentialsResult
+import com.qixuan.channelvideoflow.telegram.config.buildTelegramCredentialsResult
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue

@@ -4,6 +4,8 @@
 
 状态：方案 A 和书面规格均已由仓库所有者批准
 
+> 历史说明：本文记录 Stage 2 当时的本机自构建凭证合同。仓库所有者于 2026-09-01 明确批准 Stage 24 用户自行配置版；公开 release 的凭证来源、Keystore 存储和客户端重建以 `docs/STAGE24_USER_CONFIGURED_CREDENTIALS.md` 为准。本文其余 TDLib 授权状态与安全边界继续有效。
+
 适用应用：Channel Video Flow
 包名：`com.qixuan.channelvideoflow`
 

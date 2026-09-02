@@ -82,6 +82,9 @@ fun ChannelVideoFlowNavHost(
         LoginScreen(
             uiState = authUiState,
             onInputChanged = authViewModel::onInputChanged,
+            onCredentialApiIdChanged = authViewModel::onCredentialApiIdChanged,
+            onCredentialApiHashChanged = authViewModel::onCredentialApiHashChanged,
+            onConfigureCredentials = authViewModel::configureCredentials,
             onSubmit = authViewModel::submit,
             onResendCode = authViewModel::resendCode,
             onRetry = authViewModel::retryStart,

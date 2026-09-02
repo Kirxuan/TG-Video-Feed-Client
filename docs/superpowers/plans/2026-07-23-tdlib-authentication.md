@@ -1,5 +1,7 @@
 # 阶段 2：官方 TDLib 与真实 Telegram 授权实施计划
 
+> 历史说明：本文记录 Stage 2 的原始实施计划。仓库所有者于 2026-09-01 明确批准 Stage 24 用户自行配置版；公开 release 的凭证来源、Keystore 存储和客户端重建以 `docs/STAGE24_USER_CONFIGURED_CREDENTIALS.md` 为准。
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox syntax (- [ ]) for tracking.
 
 **Goal:** 在 arm64-v8a 真机上集成由官方源码可复现构建的 TDLib，并完成手机号、验证码、两步验证密码、会话恢复、退出和安全错误处理。

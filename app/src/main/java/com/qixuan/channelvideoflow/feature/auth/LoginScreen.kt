@@ -59,6 +59,9 @@ import com.qixuan.channelvideoflow.ui.theme.ChannelVideoFlowTokens
 internal object LoginTestTags {
     const val BrandName = "login-brand-name"
     const val Creator = "login-creator"
+    const val CredentialApiId = "login-credential-api-id"
+    const val CredentialApiHash = "login-credential-api-hash"
+    const val ConfigureCredentials = "login-configure-credentials"
     const val Input = "login-input"
     const val PasswordInput = "login-password-input"
     const val Submit = "login-submit"
@@ -77,6 +80,9 @@ fun LoginRoute(
     LoginScreen(
         uiState = uiState,
         onInputChanged = viewModel::onInputChanged,
+        onCredentialApiIdChanged = viewModel::onCredentialApiIdChanged,
+        onCredentialApiHashChanged = viewModel::onCredentialApiHashChanged,
+        onConfigureCredentials = viewModel::configureCredentials,
         onSubmit = viewModel::submit,
         onResendCode = viewModel::resendCode,
         onRetry = viewModel::retryStart,
@@ -88,6 +94,9 @@ fun LoginRoute(
 fun LoginScreen(
     uiState: LoginUiState,
     onInputChanged: (String) -> Unit,
+    onCredentialApiIdChanged: (String) -> Unit = {},
+    onCredentialApiHashChanged: (String) -> Unit = {},
+    onConfigureCredentials: () -> Unit = {},
     onSubmit: () -> Unit,
     onResendCode: () -> Unit,
     onRetry: () -> Unit,
@@ -175,7 +184,12 @@ fun LoginScreen(
                             ),
                         ) {
                             when (step) {
-                            LoginStep.UNCONFIGURED -> UnconfiguredContent(uiState.invalidKeys)
+                            LoginStep.UNCONFIGURED -> UnconfiguredContent(
+                                uiState = uiState,
+                                onApiIdChanged = onCredentialApiIdChanged,
+                                onApiHashChanged = onCredentialApiHashChanged,
+                                onConfigure = onConfigureCredentials,
+                            )
                             LoginStep.INITIALIZING -> {
                                 if (uiState.failure == null) {
                                     ProgressContent(R.string.login_initializing)
@@ -203,7 +217,7 @@ fun LoginScreen(
                     }
                 }
                 Text(
-                    text = "凭证与会话仅保存在此设备的应用私有空间",
+                    text = stringResource(R.string.login_private_storage_notice),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     style = MaterialTheme.typography.bodySmall,
                 )
@@ -215,17 +229,18 @@ fun LoginScreen(
 @Composable
 private fun AuthorizationStepper(step: LoginStep) {
     val currentIndex = when (step) {
-        LoginStep.PHONE_NUMBER -> 0
-        LoginStep.CODE -> 1
-        LoginStep.PASSWORD -> 2
+        LoginStep.UNCONFIGURED -> 0
+        LoginStep.PHONE_NUMBER -> 1
+        LoginStep.CODE -> 2
+        LoginStep.PASSWORD -> 3
         LoginStep.AUTHORIZED,
         LoginStep.LOGGING_OUT,
         LoginStep.CLOSING,
-        -> 3
+        -> 4
         else -> 0
     }
-    val labels = listOf("账号", "验证", "安全")
-    val semanticLabels = listOf("手机号", "验证码", "两步验证密码")
+    val labels = listOf("API", "账号", "验证", "安全")
+    val semanticLabels = listOf("API 参数", "手机号", "验证码", "两步验证密码")
     val stateLabel = if (currentIndex >= labels.size) {
         "授权已完成"
     } else {
@@ -291,14 +306,78 @@ private fun loginCardStateDescription(uiState: LoginUiState): String = when {
 }
 
 @Composable
-private fun UnconfiguredContent(invalidKeys: Set<String>) {
+private fun UnconfiguredContent(
+    uiState: LoginUiState,
+    onApiIdChanged: (String) -> Unit,
+    onApiHashChanged: (String) -> Unit,
+    onConfigure: () -> Unit,
+) {
     Text(
         text = stringResource(R.string.login_unconfigured),
         style = MaterialTheme.typography.titleLarge,
     )
     Text(
-        text = invalidKeys.sorted().joinToString(),
-        style = MaterialTheme.typography.bodyLarge,
+        text = stringResource(R.string.login_credentials_instructions),
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        style = MaterialTheme.typography.bodyMedium,
+    )
+    OutlinedTextField(
+        value = uiState.credentialApiId,
+        onValueChange = onApiIdChanged,
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag(LoginTestTags.CredentialApiId),
+        enabled = !uiState.isSubmitting,
+        isError = "TELEGRAM_API_ID" in uiState.invalidKeys,
+        label = { Text(stringResource(R.string.login_credential_api_id)) },
+        keyboardOptions = KeyboardOptions(
+            keyboardType = androidx.compose.ui.text.input.KeyboardType.Number,
+        ),
+        singleLine = true,
+        shape = ChannelVideoFlowTokens.Shapes.control,
+    )
+    OutlinedTextField(
+        value = uiState.credentialApiHash,
+        onValueChange = onApiHashChanged,
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag(LoginTestTags.CredentialApiHash),
+        enabled = !uiState.isSubmitting,
+        isError = "TELEGRAM_API_HASH" in uiState.invalidKeys,
+        label = { Text(stringResource(R.string.login_credential_api_hash)) },
+        keyboardOptions = KeyboardOptions(
+            keyboardType = androidx.compose.ui.text.input.KeyboardType.Password,
+        ),
+        visualTransformation = PasswordVisualTransformation(),
+        singleLine = true,
+        shape = ChannelVideoFlowTokens.Shapes.control,
+    )
+    if (uiState.invalidKeys.isNotEmpty()) {
+        Text(
+            text = stringResource(R.string.login_credentials_invalid),
+            color = MaterialTheme.colorScheme.error,
+            style = MaterialTheme.typography.bodyMedium,
+        )
+    }
+    FailureText(uiState.failure, uiState.retrySecondsRemaining)
+    StatefulPrimaryButton(
+        text = stringResource(R.string.login_credentials_save),
+        onClick = onConfigure,
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag(LoginTestTags.ConfigureCredentials),
+        enabled = uiState.canConfigureCredentials || uiState.isSubmitting,
+        state = when {
+            uiState.isSubmitting -> PrimaryActionState.Loading
+            uiState.failure != null || uiState.invalidKeys.isNotEmpty() -> PrimaryActionState.Error
+            else -> PrimaryActionState.Idle
+        },
+        stateText = if (uiState.isSubmitting) {
+            stringResource(R.string.login_credentials_saving)
+        } else {
+            null
+        },
+        progressIndicatorModifier = Modifier.testTag(LoginTestTags.Progress),
     )
 }
 
@@ -495,6 +574,7 @@ private fun FailureText(
 }
 
 private fun TelegramAuthFailure?.toFailureMessageRes(): Int? = when (this) {
+    TelegramAuthFailure.InvalidApiCredentials -> R.string.login_invalid_api_credentials
     TelegramAuthFailure.InvalidPhoneNumber -> R.string.login_invalid_phone
     TelegramAuthFailure.InvalidCode -> R.string.login_invalid_code
     TelegramAuthFailure.InvalidPassword -> R.string.login_invalid_password
@@ -503,6 +583,7 @@ private fun TelegramAuthFailure?.toFailureMessageRes(): Int? = when (this) {
     TelegramAuthFailure.NativeLibraryLoadFailed -> R.string.login_native_library_error
     TelegramAuthFailure.TdLibInitializationFailed -> R.string.login_tdlib_initialization_error
     TelegramAuthFailure.DatabaseFailed -> R.string.login_database_error
+    TelegramAuthFailure.CredentialStorageFailed -> R.string.login_credential_storage_error
     is TelegramAuthFailure.RequestRejected -> R.string.login_request_rejected
     TelegramAuthFailure.Unknown -> R.string.login_unknown_error
     null -> null

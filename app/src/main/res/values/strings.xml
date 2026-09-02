@@ -2,7 +2,15 @@
 <resources>
     <!-- 1.0 keeps the existing product UI in Chinese; only brand resources are localized. -->
     <string name="login_title" translatable="false">Telegram 授权</string>
-    <string name="login_unconfigured" translatable="false">未配置开发凭证</string>
+    <string name="login_unconfigured" translatable="false">配置你自己的 Telegram API</string>
+    <string name="login_credentials_instructions" translatable="false">请先登录 my.telegram.org，在“API development tools”中申请自己的 API ID 和 API Hash，然后填写在下方。它们只用于让 TDLib 识别你的应用，不是 Telegram 登录密码。</string>
+    <string name="login_credential_api_id" translatable="false">API ID</string>
+    <string name="login_credential_api_hash" translatable="false">API Hash</string>
+    <string name="login_credentials_invalid" translatable="false">API ID 应为正整数；API Hash 应为 32 位十六进制字符。</string>
+    <string name="login_credentials_save" translatable="false">安全保存并继续</string>
+    <string name="login_credentials_saving" translatable="false">正在安全保存</string>
+    <string name="login_credential_storage_error" translatable="false">无法读取或保存 API 参数，请重新输入后重试。</string>
+    <string name="login_private_storage_notice" translatable="false">你填写的 API 参数由 Android Keystore 加密，凭证与会话仅保存在此设备的应用私有空间</string>
     <string name="login_initializing" translatable="false">初始化中</string>
     <string name="login_phone_number" translatable="false">手机号</string>
     <string name="login_code" translatable="false">验证码</string>
@@ -29,6 +37,7 @@
     <string name="login_logging_out" translatable="false">退出中</string>
     <string name="login_closing" translatable="false">关闭中</string>
     <string name="login_invalid_phone" translatable="false">手机号错误</string>
+    <string name="login_invalid_api_credentials" translatable="false">Telegram 拒绝了这组 API 参数，请检查 API ID 和 API Hash 后重新输入。</string>
     <string name="login_invalid_code" translatable="false">验证码错误</string>
     <string name="login_invalid_password" translatable="false">密码错误</string>
     <string name="login_network_error" translatable="false">网络错误</string>

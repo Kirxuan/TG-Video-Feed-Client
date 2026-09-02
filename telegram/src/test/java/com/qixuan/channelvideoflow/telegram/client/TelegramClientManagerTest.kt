@@ -55,6 +55,36 @@ class TelegramClientManagerTest {
     }
 
     @Test
+    fun credentialsChangeClosesCurrentSessionThenStartsWithFreshCredentials() = runTest {
+        val bridge = FakeTdLibBridge()
+        var activeCredentials = TelegramCredentials(12345, "first-synthetic-hash")
+        val manager = manager(
+            bridge = bridge,
+            credentials = TelegramCredentialsProvider {
+                TelegramCredentialsResult.Available(activeCredentials)
+            },
+        )
+        manager.start()
+        activeCredentials = TelegramCredentials(54321, "second-synthetic-hash")
+
+        manager.restartAfterCredentialsChanged()
+
+        assertTrue(bridge.session(0).sentFunctions.single() is TdApi.Close)
+        bridge.emitUpdate(0, TdApi.UpdateAuthorizationState(TdApi.AuthorizationStateClosed()))
+        runCurrent()
+        assertEquals(2, bridge.createCalls)
+
+        bridge.emitUpdate(
+            1,
+            TdApi.UpdateAuthorizationState(TdApi.AuthorizationStateWaitTdlibParameters()),
+        )
+        runCurrent()
+        val parameters = bridge.session(1).sentFunctions.single() as TdApi.SetTdlibParameters
+        assertEquals(54321, parameters.apiId)
+        assertEquals("second-synthetic-hash", parameters.apiHash)
+    }
+
+    @Test
     fun waitParametersSendsExactlyOneParametersRequestForTheStateObject() = runTest {
         val bridge = FakeTdLibBridge()
         val directories = temporaryDirectories()

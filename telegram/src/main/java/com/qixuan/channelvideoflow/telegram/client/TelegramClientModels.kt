@@ -2,6 +2,7 @@ package com.qixuan.channelvideoflow.telegram.client
 
 import com.qixuan.channelvideoflow.model.auth.TelegramUnsupportedAuthStep
 import com.qixuan.channelvideoflow.model.auth.TelegramCodeInfo
+import com.qixuan.channelvideoflow.telegram.config.TelegramCredentialsUnavailableReason
 
 enum class TelegramAuthRequest {
     PARAMETERS,
@@ -32,6 +33,8 @@ sealed interface TelegramClientAuthorizationState {
 internal sealed interface TelegramClientEvent {
     data class CredentialsUnavailable(
         val invalidKeys: Set<String>,
+        val reason: TelegramCredentialsUnavailableReason =
+            TelegramCredentialsUnavailableReason.MISSING_OR_INVALID,
     ) : TelegramClientEvent
 
     data class AuthorizationStateChanged(

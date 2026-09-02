@@ -81,14 +81,46 @@ internal class TelegramClientManager private constructor(
     private var sessionToken: SessionToken? = null
     private var generation = 0L
     private var lastParameterState: TdApi.AuthorizationStateWaitTdlibParameters? = null
+    private var restartAfterClose = false
 
     override suspend fun start() = withContext(dispatcher) {
-        if (session != null) return@withContext
+        startInternal()
+    }
+
+    override suspend fun restartAfterCredentialsChanged() = withContext(dispatcher) {
+        val active = session
+        val token = sessionToken
+        if (active == null || token == null) {
+            startInternal()
+            return@withContext
+        }
+        if (restartAfterClose) return@withContext
+
+        restartAfterClose = true
+        logger.request(TelegramAuthRequest.CLOSE.name)
+        try {
+            active.send(TdApi.Close()) { result ->
+                scope.launch { handleResult(token, TelegramAuthRequest.CLOSE, result) }
+            }
+        } catch (throwable: Throwable) {
+            rethrowCancellation(throwable)
+            restartAfterClose = false
+            emitFatal(FatalCategory.INITIALIZATION)
+        }
+    }
+
+    private suspend fun startInternal() {
+        if (session != null) return
         val credentials = when (val result = credentialsProvider.get()) {
             is TelegramCredentialsResult.Available -> result.credentials
             is TelegramCredentialsResult.Unavailable -> {
-                mutableEvents.emit(TelegramClientEvent.CredentialsUnavailable(result.invalidKeys.toSet()))
-                return@withContext
+                mutableEvents.emit(
+                    TelegramClientEvent.CredentialsUnavailable(
+                        invalidKeys = result.invalidKeys.toSet(),
+                        reason = result.reason,
+                    ),
+                )
+                return
             }
         }
         try {
@@ -96,7 +128,7 @@ internal class TelegramClientManager private constructor(
         } catch (throwable: Throwable) {
             rethrowCancellation(throwable)
             emitFatal(FatalCategory.NATIVE_LIBRARY)
-            return@withContext
+            return
         }
         try {
             bridge.configureLogHandler(logger)
@@ -385,6 +417,10 @@ internal class TelegramClientManager private constructor(
                 session = null
                 sessionToken = null
                 lastParameterState = null
+                if (restartAfterClose) {
+                    restartAfterClose = false
+                    startInternal()
+                }
             }
             is TdApi.AuthorizationStateLoggingOut -> {
                 mutableChatEvents.emit(TelegramChatClientEvent.AccountLoggingOut)
@@ -509,6 +545,11 @@ internal class TelegramClientManager private constructor(
         if (!isCurrent(token)) return
         if (result !is TdApi.Error) return
         logger.failure("REQUEST_FAILED", result.code)
+        if (request == TelegramAuthRequest.CLOSE) {
+            restartAfterClose = false
+            emitFatal(FatalCategory.INITIALIZATION)
+            return
+        }
         mutableEvents.emit(TelegramClientEvent.RequestFailed(request, result.code, result.message))
     }
 

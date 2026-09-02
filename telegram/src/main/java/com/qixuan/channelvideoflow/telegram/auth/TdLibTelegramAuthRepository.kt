@@ -8,6 +8,9 @@ import com.qixuan.channelvideoflow.telegram.client.TelegramAuthClient
 import com.qixuan.channelvideoflow.telegram.client.TelegramAuthRequest
 import com.qixuan.channelvideoflow.telegram.client.TelegramClientAuthorizationState
 import com.qixuan.channelvideoflow.telegram.client.TelegramClientEvent
+import com.qixuan.channelvideoflow.telegram.config.TelegramCredentialsResult
+import com.qixuan.channelvideoflow.telegram.config.TelegramCredentialsStore
+import com.qixuan.channelvideoflow.telegram.config.TelegramCredentialsUnavailableReason
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
@@ -20,6 +23,7 @@ import kotlinx.coroutines.launch
 
 internal class TdLibTelegramAuthRepository(
     private val client: TelegramAuthClient,
+    private val credentialsStore: TelegramCredentialsStore,
     private val scope: CoroutineScope,
 ) : TelegramAuthRepository {
     private val mutableAuthState =
@@ -39,6 +43,21 @@ internal class TdLibTelegramAuthRepository(
         } catch (throwable: Throwable) {
             started.set(false)
             throw throwable
+        }
+    }
+
+    override suspend fun configureCredentials(apiId: String, apiHash: String) {
+        when (val result = credentialsStore.save(apiId, apiHash)) {
+            is TelegramCredentialsResult.Available -> {
+                mutableAuthState.value = TelegramAuthState.Initializing
+                client.restartAfterCredentialsChanged()
+            }
+            is TelegramCredentialsResult.Unavailable -> {
+                mutableAuthState.value = TelegramAuthState.UnconfiguredCredentials(
+                    invalidKeys = result.invalidKeys.toSet(),
+                    failure = result.reason.toStorageFailureOrNull(),
+                )
+            }
         }
     }
 
@@ -80,6 +99,7 @@ internal class TdLibTelegramAuthRepository(
             is TelegramClientEvent.CredentialsUnavailable -> {
                 mutableAuthState.value = TelegramAuthState.UnconfiguredCredentials(
                     invalidKeys = event.invalidKeys.toSet(),
+                    failure = event.reason.toStorageFailureOrNull(),
                 )
             }
             is TelegramClientEvent.AuthorizationStateChanged -> {
@@ -160,9 +180,11 @@ internal class TdLibTelegramAuthRepository(
                 logoutRequested.set(false)
                 TelegramAuthState.Authorized(failure)
             }
-            TelegramAuthRequest.PARAMETERS,
-            TelegramAuthRequest.CLOSE,
-            -> currentState
+            TelegramAuthRequest.PARAMETERS -> TelegramAuthState.UnconfiguredCredentials(
+                invalidKeys = setOf("TELEGRAM_API_ID", "TELEGRAM_API_HASH"),
+                failure = TelegramAuthFailure.InvalidApiCredentials,
+            )
+            TelegramAuthRequest.CLOSE -> currentState
         }
     }
 
@@ -170,5 +192,12 @@ internal class TdLibTelegramAuthRepository(
         FatalCategory.NATIVE_LIBRARY -> TelegramAuthFailure.NativeLibraryLoadFailed
         FatalCategory.INITIALIZATION -> TelegramAuthFailure.TdLibInitializationFailed
         FatalCategory.DATABASE -> TelegramAuthFailure.DatabaseFailed
+    }
+
+    private fun TelegramCredentialsUnavailableReason.toStorageFailureOrNull():
+        TelegramAuthFailure? = when (this) {
+        TelegramCredentialsUnavailableReason.MISSING_OR_INVALID -> null
+        TelegramCredentialsUnavailableReason.SECURE_STORAGE ->
+            TelegramAuthFailure.CredentialStorageFailed
     }
 }

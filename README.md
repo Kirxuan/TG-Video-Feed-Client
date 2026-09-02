@@ -9,8 +9,8 @@ VELORA（曜流）是一个原生 Android Telegram 频道视频浏览器。它�
 
 ## 项目定位
 
-- 面向个人、自行构建和自行保管凭证的使用方式。
-- 仓库公开源代码，但不提供包含维护者 Telegram API 凭证的 APK。
+- 面向个人使用；每位使用者自行申请并保管自己的 Telegram API 参数。
+- 仓库公开源代码；正式 release APK 永远不包含维护者或构建者的 Telegram API 参数，首次启动由使用者在设备上自行配置。
 - 只访问当前 Telegram 账号已有权限的内容，不扩大账号权限。
 - 不提供保存、导出、公共存储写入或内容保护绕过能力。
 - 不包含广告、统计、遥测、服务器或 Web 后台。
@@ -30,9 +30,9 @@ VELORA（曜流）是一个原生 Android Telegram 频道视频浏览器。它�
 
 ## 当前状态
 
-当前应用版本为 **1.0**，功能开发记录到 **Stage 23**。最近一次完整主机验证记录为 1,081/1,081 tests，Robolectric-Compose 28/28、API 36 AOSP x86_64 emulator Compose UI 99/99，lint、debug/release 构建以及 APK 权限/native/备份静态审计通过。
+当前应用版本为 **1.1.0**，功能开发记录到 **Stage 24**。Stage 24 增加首次启动 API ID/API Hash 配置、Android Keystore AES-GCM 加密保存、损坏凭证恢复和凭证变更后的 TDLib 安全重建；所有非 debug 构建均强制排除本机 `local.properties` 中的值。
 
-ARM64/Vivo 实体机、真实账号、真实 CDN 和超长频道上的最终公开版本验证仍标记为**尚未验证**。历史验证记录不是对所有设备和网络环境的保证；详见 [Stage 23 实施文档](docs/STAGE23_VIDEO_INDEX_SCAN_OPTIMIZATION.md)与[验收测试矩阵](docs/ACCEPTANCE_TESTS.md)。
+Stage 24 的 1106 项主机测试、lint、debug/release 构建、release BuildConfig 空值、正式签名和 APK 本机凭证反向扫描已经通过。仓库所有者报告当前 1.1.0 在 ARM64 真机安装与正常使用通过；本次正式签名 APK 未由 Codex 连接设备重复安装，真实 Android Keystore instrumentation 与逐项登录证据仍标记为**尚未验证**。仓库所有者确认已取得 Telegram 对本次无 sponsored messages/广告发行的书面例外许可；许可文件不进入仓库。历史验证记录不是对所有设备和网络环境的保证；详见 [Stage 24 实施文档](docs/STAGE24_USER_CONFIGURED_CREDENTIALS.md)与[验收测试矩阵](docs/ACCEPTANCE_TESTS.md)。
 
 ## 技术栈与边界
 
@@ -68,7 +68,17 @@ UI 不直接使用 TDLib、Room DAO 或创建 ExoPlayer。TDLib 类型不会越�
 - 自己在 [my.telegram.org](https://my.telegram.org/) 申请的 Telegram API ID 和 API Hash
 - Windows 是当前 TDLib 重建脚本的主要已验证主机；仓库已经包含可追溯的 ARM64 TDLib Java/JNI 产物
 
-## 快速开始
+## 使用正式免凭证 APK
+
+正式 APK 发布在 GitHub Releases。安装后：
+
+1. 用浏览器登录 [my.telegram.org](https://my.telegram.org/)，进入 **API development tools**，申请自己的 API ID 和 API Hash。
+2. 首次启动 VELORA，在应用界面填写这两个值。
+3. 应用完成本机加密保存后，继续按界面输入手机号、验证码和两步验证密码。
+
+API 参数使用 Android Keystore 的设备密钥进行 AES-GCM 加密，并保存在不可备份的应用私有目录。验证码和两步验证密码不会持久化。
+
+## 从源代码构建
 
 ### 1. 克隆仓库
 
@@ -81,7 +91,7 @@ cd TG-Video-Feed-Client
 
 用 Android Studio 打开仓库并完成 Gradle Sync。Android Studio 通常会在仓库根目录生成 `local.properties` 并写入本机 `sdk.dir`。
 
-### 3. 配置自己的 Telegram 凭证
+### 3. 可选：配置开发用 Telegram 凭证
 
 在根目录 `local.properties` 中加入：
 
@@ -92,7 +102,7 @@ TELEGRAM_API_HASH=<your_api_hash>
 
 不要把真实值粘贴到 Issue、Pull Request、日志或聊天中。`local.properties` 已被 Git 忽略；可提交的 [secrets.defaults.properties](secrets.defaults.properties) 只有空白默认值。
 
-> Telegram API 参数会进入你自己构建的 APK，因此不要公开上传包含个人凭证的 APK。每位使用者都应使用自己的参数自行构建。
+这一步只为本机 debug 开发构建提供便捷回退。`release`、`instrumentation` 及其他非 debug 构建会强制把 BuildConfig 凭证置空，即使 `local.properties` 中有值也不会注入；它们统一使用首次启动的设备端配置流程。
 
 ### 4. 构建与测试
 
@@ -126,6 +136,7 @@ adb devices
 - Manifest 有效权限仅为 `INTERNET` 和 `ACCESS_NETWORK_STATE`。
 - Android 备份和设备迁移备份均被禁用/排除。
 - TDLib 会话、数据库、Room、DataStore 和媒体缓存都保留在应用私有目录。
+- 使用者填写的 API ID/API Hash 由 Android Keystore 的 AES-GCM 密钥加密，密文位于 `noBackupFilesDir`，不进入 Room/DataStore/SharedPreferences。
 - 视频不写入 MediaStore、Downloads、DCIM 或 Movies。
 - 受保护内容不提供保存/分享入口，播放时按策略启用 `FLAG_SECURE`。
 - Release 关闭详细调试日志，项目不包含分析或遥测 SDK。
@@ -142,6 +153,7 @@ adb devices
 - [TDLib 可复现构建](docs/TDLIB_BUILD.md)
 - [TDLib provenance](telegram/tdlib/TDLIB_PROVENANCE.md)
 - [Stage 23 视频索引优化](docs/STAGE23_VIDEO_INDEX_SCAN_OPTIMIZATION.md)
+- [Stage 24 用户自行配置凭证](docs/STAGE24_USER_CONFIGURED_CREDENTIALS.md)
 - [完整阶段文档目录](docs/)
 
 ## 参与贡献

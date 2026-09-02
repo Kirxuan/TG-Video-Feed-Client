@@ -1,8 +1,8 @@
 # VELORA（曜流）验收测试
 
-文档版本：3.3
-日期：2026-08-30
-状态：Stage 23 已实施 TDLib 视频过滤索引、Room v5 非破坏迁移、批量事务与真实 UI 统计；本阶段主机/emulator 结果以本文件新增矩阵和 `STAGE23_PERFORMANCE_RESULTS.md` 为准，所有实体机与真实账号项目尚未验证。
+文档版本：3.5
+日期：2026-09-02
+状态：Stage 24 已实施用户自行配置、Keystore 加密文件和凭证变更后的客户端重建；1106 项主机测试、lint、debug/release 构建、正式签名和凭证反向扫描通过。仓库所有者报告当前版本真机安装与正常使用通过；本次正式签名 APK 的设备安装、真实 Keystore instrumentation 与逐项账号证据未由 Codex 重复验证。
 
 ## 1. 证据分级
 
@@ -31,7 +31,24 @@ Boundary：`Vivo/OriginOS 6 + Android 16 对 adb 安装包的后台/自启动管
 
 12F 范围更新：仓库所有者于 2026-07-30 明确不再要求原 iQOO/Vivo 设备，只以当前 Android 13 ARM64 手机作为目标真机。上述 Vivo/OriginOS 诊断历史继续保留，但不是 12F 待补项。
 
-## 2. 历史交付阶段 2：授权、供应链与主机验收
+## 2. Stage 24：用户自行配置与免凭证发行
+
+| ID | 验收项 | 当前规则/结果 |
+|---|---|---|
+| STAGE24-01 | 构建隔离 | 通过：debug 可选读取 ignored local.properties；release/instrumentation/未来非 debug BuildConfig 两字段为空 |
+| STAGE24-02 | 输入校验 | API ID 为正整数，API Hash 为 32 位十六进制；错误只显示键和固定文案 |
+| STAGE24-03 | 静态存储 | Android Keystore AES-256-GCM、随机 IV、固定 AAD、noBackupFilesDir、原子替换、4KiB 上限 |
+| STAGE24-04 | 敏感 UI | API Hash 密码遮罩；提交前取快照并立即从 ViewModel/Compose 状态清除；不用 SavedStateHandle |
+| STAGE24-05 | 损坏恢复 | 密文/密钥不可读时失败关闭；用户显式重新输入后重建密钥与密文，不读损坏值 |
+| STAGE24-06 | TDLib 拒绝 | SetTdlibParameters 失败回到配置页；新值保存后旧 Client Close → Closed → 新 generation 唯一 Client |
+| STAGE24-07 | APK 扫描 | 通过：本机 API ID/API Hash 均零命中；仅 INTERNET/ACCESS_NETWORK_STATE，备份禁用，只有 arm64-v8a |
+| STAGE24-08 | 自动化 | 通过：定向测试通过；完整 test 1106/1106、lint、debug/release 构建退出码 0 |
+| STAGE24-09 | Android Keystore 真机 | `SecureTelegramCredentialsAndroidTest` 在授权 ARM64 设备执行；本次 Codex 未连接设备，尚未验证 |
+| STAGE24-10 | 人工登录 | 仓库所有者报告当前版本真机安装与正常使用通过；首次配置、错误参数修正、登录、重启恢复和退出的逐项证据尚未记录 |
+| STAGE24-11 | 正式签名 | 通过：RSA-4096 发布证书、APK Signature Scheme v2/v3、`zipalign` 与 `apksigner verify`；签名材料位于仓库外且不进入 Git |
+| STAGE24-12 | 无广告发行依据 | 仓库所有者确认已取得 Telegram 书面例外许可；许可文件和账户信息不进入仓库 |
+
+## 历史交付阶段 2：授权、供应链与主机验收
 
 阶段 2 合并原阶段 2–4，只验收官方 TDLib 授权范围；频道、标签、媒体、缓存和信息流案例仍属未来阶段。完整供应链固定值、哈希、构建入口与许可证见 `docs/TDLIB_BUILD.md`；单次执行命令、退出码与静态扫描结果见 `.superpowers/sdd/task-10-report.md`。
 
@@ -339,7 +356,7 @@ Boundary：`Vivo/OriginOS 6 + Android 16 对 adb 安装包的后台/自启动管
 | UI-12 | 权限 | 检查 merged manifest | 只有 INTERNET 和 ACCESS_NETWORK_STATE |
 | UI-13 | 设置质量 | 依次选择自动、省流、720p、原画 | 四个选项可见，选择事件和持久状态一致 |
 | UI-14 | Feed 初始顺序 | 直接渲染新会话首个 state | “随机”首次即 selected，“最新”不出现中间 selected state |
-| UI-15 | 1.0 品牌 locale | 分别注入 `en-US`、`zh-CN`、`zh-HK` 并检查 APK badging | 英文显示 `VELORA` 与英文标语；简体/繁体中文显示“曜流”与中文标语；品牌名高度至少 28dp；APK `versionName=1.0` 且启动器标签一致 |
+| UI-15 | 1.1.0 品牌 locale | 分别注入 `en-US`、`zh-CN`、`zh-HK` 并检查 APK badging | 英文显示 `VELORA` 与英文标语；简体/繁体中文显示“曜流”与中文标语；品牌名高度至少 28dp；APK `versionName=1.1.0` 且启动器标签一致 |
 | UI-16 | 创造者 locale | 分别注入 `en-US`、`zh-CN`、`zh-HK` 并渲染登录页 | 英文只显示 `Created by Kirxuan`；简体/繁体中文只显示“创造者：麒轩”；验证码等授权状态仍在默认视口可见 |
 
 ## 8. 真机自动/半自动验证

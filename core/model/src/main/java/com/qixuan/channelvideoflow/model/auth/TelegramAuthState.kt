@@ -32,6 +32,7 @@ data class TelegramCodeInfo(
 sealed interface TelegramAuthState {
     data class UnconfiguredCredentials(
         val invalidKeys: Set<String>,
+        val failure: TelegramAuthFailure? = null,
     ) : TelegramAuthState
 
     data object Initializing : TelegramAuthState

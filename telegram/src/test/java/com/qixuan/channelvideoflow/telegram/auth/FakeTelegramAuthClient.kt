@@ -16,6 +16,8 @@ internal class FakeTelegramAuthClient : TelegramAuthClient {
     var eventToEmitOnStart: TelegramClientEvent? = null
     var startCalls = 0
         private set
+    var restartAfterCredentialsChangedCalls = 0
+        private set
     var logoutCalls = 0
         private set
     var resendCodeCalls = 0
@@ -29,6 +31,10 @@ internal class FakeTelegramAuthClient : TelegramAuthClient {
         startCalls += 1
         subscriberCountsAtStart += mutableEvents.subscriptionCount.value
         eventToEmitOnStart?.let { mutableEvents.emit(it) }
+    }
+
+    override suspend fun restartAfterCredentialsChanged() {
+        restartAfterCredentialsChangedCalls += 1
     }
 
     override suspend fun submitPhoneNumber(phoneNumber: String) {

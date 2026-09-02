@@ -8,7 +8,10 @@ import com.qixuan.channelvideoflow.domain.cache.MediaCachePreferences
 import com.qixuan.channelvideoflow.domain.media.DevicePreloadPolicySource
 import com.qixuan.channelvideoflow.domain.video.VideoFeedOnboardingPreferences
 import com.qixuan.channelvideoflow.onboarding.DataStoreVideoFeedOnboardingPreferences
+import com.qixuan.channelvideoflow.telegram.config.PackagedTelegramCredentialsProvider
+import com.qixuan.channelvideoflow.telegram.config.SecureTelegramCredentialsProvider
 import com.qixuan.channelvideoflow.telegram.config.TelegramCredentialsProvider
+import com.qixuan.channelvideoflow.telegram.config.TelegramCredentialsStore
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -23,9 +26,19 @@ abstract class ConfigurationModule {
     ): TelegramCredentialStatusProvider
 
     @Binds
-    abstract fun bindTelegramCredentialsProvider(
+    abstract fun bindPackagedTelegramCredentialsProvider(
         implementation: BuildConfigTelegramCredentialStatusProvider,
+    ): PackagedTelegramCredentialsProvider
+
+    @Binds
+    abstract fun bindTelegramCredentialsProvider(
+        implementation: SecureTelegramCredentialsProvider,
     ): TelegramCredentialsProvider
+
+    @Binds
+    abstract fun bindTelegramCredentialsStore(
+        implementation: SecureTelegramCredentialsProvider,
+    ): TelegramCredentialsStore
 
     @Binds
     abstract fun bindMediaCachePreferences(

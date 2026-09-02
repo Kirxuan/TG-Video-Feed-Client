@@ -6,6 +6,7 @@ internal interface TelegramAuthClient {
     val events: Flow<TelegramClientEvent>
 
     suspend fun start()
+    suspend fun restartAfterCredentialsChanged()
     suspend fun submitPhoneNumber(phoneNumber: String)
     suspend fun submitCode(code: String)
     suspend fun resendCode()

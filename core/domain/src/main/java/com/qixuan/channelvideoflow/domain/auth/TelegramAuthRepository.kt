@@ -7,6 +7,7 @@ interface TelegramAuthRepository {
     val authState: StateFlow<TelegramAuthState>
 
     suspend fun start()
+    suspend fun configureCredentials(apiId: String, apiHash: String)
     suspend fun submitPhoneNumber(phoneNumber: String)
     suspend fun submitCode(code: String)
     suspend fun resendCode()

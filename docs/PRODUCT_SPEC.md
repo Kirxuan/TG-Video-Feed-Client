@@ -1,14 +1,14 @@
 # VELORA（曜流）产品规格
 
-文档版本：1.7
-日期：2026-08-31
-状态：Stage 23 已完成视频过滤搜索索引优化；源代码按 Apache License 2.0 准备公开，VELORA（曜流）1.0 的个人自构建、凭证与内容保护边界不变
+文档版本：1.8
+日期：2026-09-01
+状态：Stage 24 已实现公开版用户自行配置 API 参数；VELORA（曜流）1.1.0 的非 debug 构建不包含维护者凭证，正式签名静态 Proof 已通过，真机正常使用由仓库所有者确认
 
-> 本文记录 VELORA 1.0 的产品基线；Stage 18 后续在同一单播放器、私有缓存与有界预加载合同内增加 Telegram HLS、混合 ABR 和动态按秒预加载，Stage 23 将初始索引升级为 TDLib 普通视频过滤搜索。没有安全候选时仍回退 direct MP4，不在手机本地转码；未列入真机证据的行为不得由 Fake/host test 推断为已人工验证。
+> 本文记录 VELORA 1.1.0 的产品基线；Stage 18 后续在同一单播放器、私有缓存与有界预加载合同内增加 Telegram HLS、混合 ABR 和动态按秒预加载，Stage 23 将初始索引升级为 TDLib 普通视频过滤搜索，Stage 24 增加免维护者凭证的用户自行配置路径。没有安全候选时仍回退 direct MP4，不在手机本地转码；未列入真机证据的行为不得由 Fake/host test 推断为已人工验证。
 
 ## 1. 产品定义
 
-VELORA（曜流）是一个仅供单个所有者个人使用的原生 Android 应用，品牌标语为“曜流，让精彩自然流动”（“VELORA — Let Content Flow.”）。用户通过自己的 Telegram 个人账号授权，选择已经加入且仍有权访问的频道，将其中的普通视频消息建立本地元数据索引，然后以竖向短视频信息流连续播放。
+VELORA（曜流）是一个供个人使用的原生 Android 应用，品牌标语为“曜流，让精彩自然流动”（“VELORA — Let Content Flow.”）。每位使用者通过自己的 Telegram API 参数和个人账号授权，选择已经加入且仍有权访问的频道，将其中的普通视频消息建立本地元数据索引，然后以竖向短视频信息流连续播放。
 
 应用不提供服务器、Web 后台、广告、统计、埋点、商业化、上传或社交互动功能。应用必须尊重 Telegram 权限和内容保护，不扩大账号本身的访问能力。
 
@@ -28,7 +28,7 @@ VELORA（曜流）是一个仅供单个所有者个人使用的原生 Android �
 
 ## 3. 目标用户与使用前提
 
-- 唯一目标用户是应用所有者。
+- 目标用户是愿意自行申请并保管 Telegram API 参数的个人使用者。
 - 用户自行申请并保管 Telegram API ID/API Hash。
 - 用户只使用一个 Telegram 账号；退出后可登录另一个账号，但不会并行保留多账号会话。
 - 用户必须遵守频道规则、Telegram 条款和所在地法律。
@@ -38,7 +38,9 @@ VELORA（曜流）是一个仅供单个所有者个人使用的原生 Android �
 
 ### 4.1 授权与会话
 
-- FR-AUTH-01：启动时检查开发凭证配置并初始化 TDLib。
+- FR-AUTH-01：release 首次启动时要求使用者填写自己的 API ID/API Hash；格式通过并完成 Android Keystore 加密保存后初始化 TDLib。debug 可在没有设备端配置时使用被 Git 忽略的本机开发值。
+- FR-AUTH-01A：任何非 debug 构建不得注入构建者的本机 API 参数；公开 APK 反编译后不得出现维护者值。
+- FR-AUTH-01B：格式错误、Keystore/密文不可用或 TDLib 拒绝参数时返回可恢复配置状态；修改参数会先关闭旧 TDLib Client，收到 Closed 后再用新参数创建唯一 Client。
 - FR-AUTH-02：支持国家区号和手机号手动输入。
 - FR-AUTH-03：支持 Telegram 验证码。
 - FR-AUTH-04：支持两步验证密码。
@@ -188,7 +190,7 @@ video.supportsStreaming=false 时必须：
 
 ### 5.1 启动页
 
-显示 TDLib 初始化、凭证检查和登录状态恢复。缺少凭证时进入“未配置开发凭证”说明状态，不显示伪登录。
+显示 API 参数配置、TDLib 初始化和登录状态恢复。缺少凭证时显示 API ID/API Hash 输入和申请说明，不显示伪登录；API Hash 使用密码遮罩，提交后从 UI 状态清除。
 
 ### 5.2 登录页
 
@@ -225,7 +227,7 @@ video.supportsStreaming=false 时必须：
 
 - 当前授权实现将 TDLib database root 放在 app-private `noBackupFilesDir`，files root 放在 app-private `cacheDir`；未来会话与媒体实现也必须保持在应用内部存储。
 - Room 保存频道、视频、标签、标签关联、游标和播放历史元数据。
-- DataStore 保存非敏感偏好；不得保存验证码、密码、API Hash、TDLib 数据库密钥或会话对象。
+- DataStore 保存非敏感偏好；不得保存验证码、密码、API Hash、TDLib 数据库密钥或会话对象。API Hash 只能以 Android Keystore AES-GCM 密文保存到 noBackupFilesDir 专用文件。
 - 退出账号清除账号相关 Room 数据、TDLib 数据库/会话和媒体缓存，但保留不敏感的应用级设置。
 - 清空媒体缓存不删除登录状态、频道索引、标签索引或播放历史。
 - 卸载应用由 Android 删除应用私有数据。
@@ -254,6 +256,6 @@ video.supportsStreaming=false 时必须：
 - UI 状态有 Compose/仪器测试。
 - 每阶段运行适用的 test、lint、assembleDebug。
 - TDLib native、真实授权、真实频道扫描、区间 seek、编码和温度行为必须使用真机人工验收。
-- debug APK 是第一版唯一构建产物。
+- debug 继续用于开发验证；公开 release APK 必须经过免维护者凭证扫描、独立长期签名和 ARM64 真机门槛。
 
 完整测试矩阵见 ACCEPTANCE_TESTS.md。

@@ -1,8 +1,8 @@
 # VELORA（曜流）分阶段开发计划
 
-文档版本：2.2
-日期：2026-08-30
-状态：Stage 23 频道视频索引扫描极致优化已完成生产替换、Room v5 迁移、主机与 API 36 AOSP x86_64 emulator Proof；所有实体机与真实账号结果尚未验证，不进入 Stage 24
+文档版本：2.4
+日期：2026-09-02
+状态：Stage 24 用户自行配置凭证、主机 Proof 与正式签名静态 Proof 已完成；仓库所有者报告当前版本 ARM64 真机安装和正常使用通过，并确认已取得 Telegram 对本次无 sponsored messages/广告发行的书面例外许可
 
 ## 1. 计划原则
 
@@ -10,7 +10,13 @@
 
 任何阶段只能在前一阶段的 Proof 通过并完成汇报后开始。用户未明确批准时停止。不得用假登录、假频道或假视频掩盖真实 TDLib 路径尚未完成。
 
-## 2. 当前实施状态：Stage 23
+## 2. 当前实施状态：Stage 24
+
+Stage 24 把公开发行路径从“每位使用者修改 local.properties 后自行构建”升级为“下载同一份免凭证 release APK，在首次启动填写自己的 API 参数”。所有非 debug BuildConfig 值强制为空；设备端值通过 Android Keystore AES-GCM 加密并保存到 noBackupFilesDir。格式错误、密文/密钥损坏和 TDLib 参数拒绝都有可恢复状态；修改参数时唯一客户端先 Close/Closed 再读取新值创建，保持单客户端所有权。详细合同与证据见 `STAGE24_USER_CONFIGURED_CREDENTIALS.md`。
+
+本阶段不改变 TDLib 协议、账号授权状态来源、权限、Room、Media3、播放器、缓存、预加载或内容保护。主机 `test` 1106/1106、lint、debug/release 构建、BuildConfig 空值、APK 凭证反向扫描、manifest、ABI 与正式签名审计已通过。仓库所有者报告当前版本 ARM64 真机安装和正常使用通过；Codex 本次设备列表为空，未重复执行正式签名 APK 安装、Android Keystore instrumentation 或真实账号逐项验收。仓库所有者确认的书面例外许可解除本次 sponsored messages 发布门槛；许可文件不进入仓库。
+
+## 2.1 上一实施状态：Stage 23
 
 Stage 23 将生产初始索引从 `GetChatHistory` 全普通消息遍历替换为固定 TDLib 1.8.66 的 `SearchChatMessages + SearchMessagesFilterVideo`。Room v5 新增独立策略版本、过滤 cursor、完成事实、候选/页数与近似总数；4→5 迁移保留旧完整频道的完成事实，旧未完成频道保留已有索引并从安全 cursor 0 幂等重扫。页面热路径已改为 existing-key 查询、videos/tags/cross-ref 批量写和一次频道状态更新；全局孤儿标签清理移到完成/编辑/删除等低频边界。协调器以最多 2 个 worker 做近期首轮和公平轮转，任一 FLOOD_WAIT 共享扫描闸门，非零游标停滞进入可恢复错误。UI 只显示视频结果页、候选、唯一索引、完成频道和带“约”的 TDLib 估算。详细合同、审计和分层结果见 `STAGE23_VIDEO_INDEX_SCAN_OPTIMIZATION.md`、`STAGE23_GITHUB_REUSE_AUDIT.md`、`STAGE23_PERFORMANCE_RESULTS.md`。
 

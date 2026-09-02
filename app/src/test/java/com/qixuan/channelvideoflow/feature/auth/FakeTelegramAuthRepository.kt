@@ -19,6 +19,7 @@ internal class FakeTelegramAuthRepository(
         private set
     var resendCodeCalls = 0
         private set
+    val configuredCredentials = mutableListOf<Pair<String, String>>()
     val submittedPhoneNumbers = mutableListOf<String>()
     val submittedCodes = mutableListOf<String>()
     val submittedPasswords = mutableListOf<String>()
@@ -45,6 +46,10 @@ internal class FakeTelegramAuthRepository(
         startFailureBeforeGate?.let { throw it }
         startGate?.await()
         startFailureAfterGate?.let { throw it }
+    }
+
+    override suspend fun configureCredentials(apiId: String, apiHash: String) {
+        configuredCredentials += apiId to apiHash
     }
 
     override suspend fun submitPhoneNumber(phoneNumber: String) {

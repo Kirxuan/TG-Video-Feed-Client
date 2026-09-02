@@ -1,8 +1,8 @@
 # VELORA（曜流）安全设计
 
-文档版本：2.1
-日期：2026-08-31
-状态：开源准备没有扩大权限、凭证、存储、日志、依赖、TDLib、Room、Media3 或缓存边界；公开仓库不包含维护者凭证或签名 APK，ARM64/Vivo 真机仍尚未验证
+文档版本：2.3
+日期：2026-09-02
+状态：Stage 24 已实现用户自行配置与 Android Keystore 加密存储；非 debug BuildConfig 空值、正式签名、APK 本机凭证零命中、权限/备份/ABI 审计已通过。仓库所有者报告当前版本真机正常使用通过；本次正式签名 APK 的设备安装和真实 Keystore instrumentation 未由 Codex 重复验证
 
 > 视频字节仍只存在于 `cacheDir/tdlib/files`。应用不建立 Media3 第二份缓存；官方 `GetStorageStatistics` 精确统计 `FileTypeVideo`，默认 500MB 配额通过未 pin 文件的 LRU/TDLib 删除能力执行。内容导出仍不支持；阶段 8 已由 app 层 `WindowSecurityController` 按当前消息的 `canBeSaved` 设置和恢复 `FLAG_SECURE`。
 
@@ -44,31 +44,40 @@
 
 ## 3. API 凭证
 
-### 3.1 唯一来源
+### 3.1 凭证来源
 
-真实值只允许存在于根目录 local.properties：
+debug 开发构建的可选回退值只允许存在于根目录 local.properties：
 
     TELEGRAM_API_ID=<用户本地值>
     TELEGRAM_API_HASH=<用户本地值>
 
-当前仓库已具备：
+公开发行路径固定为：
+
+- `release`、`instrumentation` 及未来其他非 debug 构建的 BuildConfig API ID/API Hash 强制为空，不读取 `local.properties` 的真实值。
+- 使用者首次启动时只在设备 UI 中填写自己的 API ID/API Hash。
+- 格式通过后，由 Android Keystore 中不可导出的 AES-256 密钥执行 AES-GCM 加密；密文写入 `noBackupFilesDir/credentials/telegram-api.v1`。
+- 存储文件采用带版本的定长明文结构、认证附加数据、随机 GCM IV、4KiB 读取上限和临时文件原子替换；明文字节使用后覆盖。
+- 密文或密钥不可读时失败关闭，界面要求重新输入；不会回退到损坏值、日志或公共存储。
+
+开发构建仍具备：
 
 - .gitignore，明确忽略 local.properties。
 - secrets.defaults.properties，仅含空值或说明，不含可用共享凭证。
-- Gradle 配置，从 `local.properties` 读取并做类型/空值校验；值只进入 BuildConfig，界面仅显示缺失或格式错误键名。
+- Gradle 配置，只为 debug 从 `local.properties` 读取并做类型/空值校验；未保存设备端参数时，debug 可用它初始化 TDLib。
 
 不得使用公开共享 api_id/api_hash，不得要求用户在聊天中粘贴 api_hash。
 
-### 3.2 构建注入
+### 3.2 构建与运行时边界
 
-- Gradle 可将本地值注入 BuildConfig 或 native 初始化边界，但不得输出到 Gradle 日志、异常或生成报告。
-- 缺失值时优先让 debug 应用显示“未配置开发凭证”页面；若构建逻辑选择失败，则错误只列缺失键名。
+- Gradle 只可将本地值注入 debug BuildConfig，不得输出到 Gradle 日志、异常或生成报告。
+- 非 debug BuildConfig 必须为空；公开 APK 的反编译扫描必须同时检查维护者 API ID 和 API Hash 均不存在。
+- 缺失值时显示用户自行配置页面；格式或存储失败只列固定键名/固定错误类别，不输出值。
 - 提交前检查 git diff、git diff --cached 和 git check-ignore local.properties。
 - 构建目录不加入版本控制。
 
 ### 3.3 剩余风险
 
-公开源码不包含任何真实 API 参数。API 参数进入使用者自行构建的 APK 后理论上可被反编译提取，因此每位使用者都必须使用自己的参数构建，并且不得公开分发含有个人凭证的 APK。当前项目不上传商店或公共制品库。
+公开源码和正式 APK 不包含维护者的真实 API 参数。使用者填写的参数在运行时必须以明文传给 TDLib，因此已 root、恶意调试、键盘/系统受控或进程内存被读取的设备仍可能泄露；Android Keystore 主要保护静态存储和普通文件提取，不承诺抵御已失守设备。任何人仍不得公开分发预先写入自己 API 参数的 APK。
 
 ## 4. 授权输入和会话
 
@@ -78,6 +87,7 @@
 - 不在异常中附带原始 TDLib 授权对象。
 - 当前 TDLib database root 使用 `Context.noBackupFilesDir`，files root 使用 `Context.cacheDir`；两者均为应用私有目录，不硬编码公共路径。
 - TDLib 数据库密钥如启用，只在进程内生成/获取，不记录、不备份、不进入 BuildConfig。
+- API Hash 只在配置 UI、加密/解密和 TDLib 初始化所需内存中短暂存在；提交配置后立即从 ViewModel/Compose 状态清除。
 
 ## 5. Android 备份与迁移
 
@@ -213,6 +223,8 @@ Android 可能在存储不足时删除 cacheDir 文件。DataSource 每次读取
 
 - local.properties 被 Git 忽略且不在 index。
 - secrets.defaults.properties 无可用凭证。
+- release BuildConfig 的两个凭证字段均为空，APK 扫描不含维护者本机值。
+- Keystore 密文篡改、损坏、格式错误和写入失败均失败关闭；显式重新输入后可重建密钥与密文。
 - 源码和资源搜索不含真实 api_hash、验证码和密码。
 - merged manifest 只有两项允许权限。
 - merged manifest 禁用备份并引用两套排除规则。

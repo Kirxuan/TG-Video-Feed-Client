@@ -96,6 +96,63 @@ class AuthViewModelTest {
     }
 
     @Test
+    fun `credential configuration clears hash before delegating once`() = runTest {
+        val repository = FakeTelegramAuthRepository(
+            TelegramAuthState.UnconfiguredCredentials(
+                setOf("TELEGRAM_API_ID", "TELEGRAM_API_HASH"),
+            ),
+        )
+        val viewModel = AuthViewModel(repository)
+        runCurrent()
+
+        viewModel.onCredentialApiIdChanged("12a345")
+        viewModel.onCredentialApiHashChanged("0123456789abcdef0123456789abcdef")
+        viewModel.configureCredentials()
+        runCurrent()
+        viewModel.configureCredentials()
+        runCurrent()
+
+        assertEquals(
+            listOf("12345" to "0123456789abcdef0123456789abcdef"),
+            repository.configuredCredentials,
+        )
+        assertEquals("12345", viewModel.uiState.value.credentialApiId)
+        assertEquals("", viewModel.uiState.value.credentialApiHash)
+        assertTrue(viewModel.uiState.value.isSubmitting)
+    }
+
+    @Test
+    fun `storage failure keeps api id but never restores api hash`() = runTest {
+        val repository = FakeTelegramAuthRepository(
+            TelegramAuthState.UnconfiguredCredentials(
+                setOf("TELEGRAM_API_ID", "TELEGRAM_API_HASH"),
+            ),
+        )
+        val viewModel = AuthViewModel(repository)
+        runCurrent()
+        viewModel.onCredentialApiIdChanged("12345")
+        viewModel.onCredentialApiHashChanged("0123456789abcdef0123456789abcdef")
+        viewModel.configureCredentials()
+        runCurrent()
+
+        repository.emit(
+            TelegramAuthState.UnconfiguredCredentials(
+                invalidKeys = setOf("TELEGRAM_API_ID", "TELEGRAM_API_HASH"),
+                failure = TelegramAuthFailure.CredentialStorageFailed,
+            ),
+        )
+        runCurrent()
+
+        assertEquals("12345", viewModel.uiState.value.credentialApiId)
+        assertEquals("", viewModel.uiState.value.credentialApiHash)
+        assertEquals(
+            TelegramAuthFailure.CredentialStorageFailed,
+            viewModel.uiState.value.failure,
+        )
+        assertFalse(viewModel.uiState.value.isSubmitting)
+    }
+
+    @Test
     fun `code resend follows server timeout and delegates once`() = runTest {
         val info = TelegramCodeInfo(
             deliveryType = TelegramCodeDeliveryType.TELEGRAM_MESSAGE,

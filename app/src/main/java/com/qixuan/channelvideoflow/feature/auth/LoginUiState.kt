@@ -20,6 +20,8 @@ enum class LoginStep {
 data class LoginUiState(
     val step: LoginStep,
     val input: String = "",
+    val credentialApiId: String = "",
+    val credentialApiHash: String = "",
     val invalidKeys: Set<String> = emptySet(),
     val failure: TelegramAuthFailure? = null,
     val unsupportedStep: TelegramUnsupportedAuthStep? = null,
@@ -34,6 +36,12 @@ data class LoginUiState(
             !isSubmitting &&
             step in setOf(LoginStep.PHONE_NUMBER, LoginStep.CODE, LoginStep.PASSWORD)
 
+    val canConfigureCredentials: Boolean
+        get() = step == LoginStep.UNCONFIGURED &&
+            credentialApiId.isNotBlank() &&
+            credentialApiHash.isNotBlank() &&
+            !isSubmitting
+
     val canLogout: Boolean
         get() = step == LoginStep.AUTHORIZED && retrySecondsRemaining == 0 && !isSubmitting
 
@@ -43,5 +51,4 @@ data class LoginUiState(
             resendSecondsRemaining == 0 &&
             retrySecondsRemaining == 0 &&
             !isSubmitting
-
 }

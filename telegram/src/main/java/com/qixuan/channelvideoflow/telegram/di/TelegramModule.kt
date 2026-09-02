@@ -24,6 +24,7 @@ import com.qixuan.channelvideoflow.telegram.media.TdLibMediaCacheManager
 import com.qixuan.channelvideoflow.telegram.di.TelegramApplicationScope
 import com.qixuan.channelvideoflow.telegram.client.TelegramClientManager
 import com.qixuan.channelvideoflow.telegram.config.TelegramCredentialsProvider
+import com.qixuan.channelvideoflow.telegram.config.TelegramCredentialsStore
 import com.qixuan.channelvideoflow.telegram.logging.AndroidAuthEventLogger
 import com.qixuan.channelvideoflow.telegram.logging.AuthEventLogger
 import com.qixuan.channelvideoflow.telegram.message.RoomMessageIndexStore
@@ -113,8 +114,9 @@ internal object TelegramModule {
     @Singleton
     internal fun provideTelegramAuthRepository(
         client: TelegramAuthClient,
+        credentialsStore: TelegramCredentialsStore,
         @TelegramApplicationScope scope: CoroutineScope,
-    ): TelegramAuthRepository = TdLibTelegramAuthRepository(client, scope)
+    ): TelegramAuthRepository = TdLibTelegramAuthRepository(client, credentialsStore, scope)
 
     @Provides
     @Singleton

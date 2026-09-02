@@ -7,6 +7,10 @@ import com.qixuan.channelvideoflow.telegram.client.FatalCategory
 import com.qixuan.channelvideoflow.telegram.client.TelegramAuthRequest
 import com.qixuan.channelvideoflow.telegram.client.TelegramClientAuthorizationState
 import com.qixuan.channelvideoflow.telegram.client.TelegramClientEvent
+import com.qixuan.channelvideoflow.telegram.config.TelegramCredentials
+import com.qixuan.channelvideoflow.telegram.config.TelegramCredentialsResult
+import com.qixuan.channelvideoflow.telegram.config.TelegramCredentialsStore
+import com.qixuan.channelvideoflow.telegram.config.TelegramCredentialsUnavailableReason
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
@@ -71,6 +75,90 @@ class TdLibTelegramAuthRepositoryTest {
         assertEquals(
             TelegramAuthState.UnconfiguredCredentials(
                 setOf("TELEGRAM_API_HASH", "TELEGRAM_API_ID"),
+            ),
+            repository.authState.value,
+        )
+    }
+
+    @Test
+    fun storageFailureIsRecoverableOnCredentialConfigurationScreen() = runTest {
+        val client = FakeTelegramAuthClient()
+        val repository = startedRepository(client)
+
+        client.emit(
+            TelegramClientEvent.CredentialsUnavailable(
+                invalidKeys = setOf("TELEGRAM_API_ID", "TELEGRAM_API_HASH"),
+                reason = TelegramCredentialsUnavailableReason.SECURE_STORAGE,
+            ),
+        )
+        runCurrent()
+
+        assertEquals(
+            TelegramAuthState.UnconfiguredCredentials(
+                invalidKeys = setOf("TELEGRAM_API_ID", "TELEGRAM_API_HASH"),
+                failure = TelegramAuthFailure.CredentialStorageFailed,
+            ),
+            repository.authState.value,
+        )
+    }
+
+    @Test
+    fun validConfiguredCredentialsAreSavedBeforeClientStartsAgain() = runTest {
+        val client = FakeTelegramAuthClient()
+        val store = RecordingCredentialsStore(
+            TelegramCredentialsResult.Available(
+                TelegramCredentials(12345, "0123456789abcdef0123456789abcdef"),
+            ),
+        )
+        val repository = repository(client, store)
+        repository.start()
+        runCurrent()
+
+        repository.configureCredentials("12345", "0123456789abcdef0123456789abcdef")
+        runCurrent()
+
+        assertEquals(1, store.saveCalls)
+        assertEquals(1, client.startCalls)
+        assertEquals(1, client.restartAfterCredentialsChangedCalls)
+        assertEquals(TelegramAuthState.Initializing, repository.authState.value)
+    }
+
+    @Test
+    fun invalidConfiguredCredentialsRemainOnConfigurationScreen() = runTest {
+        val client = FakeTelegramAuthClient()
+        val store = RecordingCredentialsStore(
+            TelegramCredentialsResult.Unavailable(setOf("TELEGRAM_API_HASH")),
+        )
+        val repository = repository(client, store)
+
+        repository.configureCredentials("12345", "invalid")
+
+        assertEquals(1, store.saveCalls)
+        assertEquals(0, client.startCalls)
+        assertEquals(
+            TelegramAuthState.UnconfiguredCredentials(setOf("TELEGRAM_API_HASH")),
+            repository.authState.value,
+        )
+    }
+
+    @Test
+    fun rejectedTdLibParametersReturnToCredentialConfiguration() = runTest {
+        val client = FakeTelegramAuthClient()
+        val repository = startedRepository(client)
+
+        client.emit(
+            TelegramClientEvent.RequestFailed(
+                TelegramAuthRequest.PARAMETERS,
+                401,
+                "synthetic rejected credentials",
+            ),
+        )
+        runCurrent()
+
+        assertEquals(
+            TelegramAuthState.UnconfiguredCredentials(
+                invalidKeys = setOf("TELEGRAM_API_ID", "TELEGRAM_API_HASH"),
+                failure = TelegramAuthFailure.InvalidApiCredentials,
             ),
             repository.authState.value,
         )
@@ -317,12 +405,31 @@ class TdLibTelegramAuthRepositoryTest {
 
     private fun TestScope.repository(
         client: FakeTelegramAuthClient,
-    ): TdLibTelegramAuthRepository = TdLibTelegramAuthRepository(client, backgroundScope)
+        credentialsStore: TelegramCredentialsStore = RecordingCredentialsStore(),
+    ): TdLibTelegramAuthRepository = TdLibTelegramAuthRepository(
+        client,
+        credentialsStore,
+        backgroundScope,
+    )
 
     private suspend fun TestScope.startedRepository(
         client: FakeTelegramAuthClient,
     ): TdLibTelegramAuthRepository = repository(client).also {
         it.start()
         runCurrent()
+    }
+}
+
+private class RecordingCredentialsStore(
+    private val result: TelegramCredentialsResult = TelegramCredentialsResult.Unavailable(
+        setOf("TELEGRAM_API_ID", "TELEGRAM_API_HASH"),
+    ),
+) : TelegramCredentialsStore {
+    var saveCalls = 0
+        private set
+
+    override suspend fun save(apiId: String, apiHash: String): TelegramCredentialsResult {
+        saveCalls += 1
+        return result
     }
 }

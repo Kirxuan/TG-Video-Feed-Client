@@ -6,8 +6,9 @@
 
 - 应用名称：VELORA；中文名：曜流。
 - 包名：com.qixuan.channelvideoflow。
-- 用途：仅供仓库所有者个人使用的原生 Android Telegram 频道视频浏览器。
-- 当前状态：Stage 23 已完成频道视频索引扫描优化；VELORA（曜流）保持 1.0，开源准备只调整仓库文档、许可证和忽略规则，ARM64/Vivo 真机验证尚未执行。
+- 用途：供使用者以自己的 Telegram 个人账号和自己的 Telegram API 参数使用的原生 Android 频道视频浏览器。
+- 当前状态：Stage 24 已完成“用户自行配置”正式发行准备；VELORA（曜流）版本为 1.1.0，正式签名 APK 的凭证、签名、权限、备份和 ABI 静态 Proof 已通过。仓库所有者报告当前版本真机安装与正常使用通过；Codex 未连接设备重复安装该正式签名 APK。
+- 仓库所有者确认已取得 Telegram 对本次无 sponsored messages/广告发行的书面例外许可；许可文件和任何账户信息不得提交到仓库。
 - 未经用户明确批准，不得进入下一阶段。
 
 ## 2. 固定技术合同
@@ -61,7 +62,9 @@ Compose UI → ViewModel → UseCase/Repository 接口 → Repository 实现 →
 
 ## 6. Telegram 与授权安全
 
-- 只能从未跟踪的 local.properties 读取 TELEGRAM_API_ID 和 TELEGRAM_API_HASH。
+- debug 开发构建可从未跟踪的 local.properties 读取 TELEGRAM_API_ID 和 TELEGRAM_API_HASH；任何非 debug 构建必须强制使用空 BuildConfig 值。
+- 公开版只能由使用者在设备 UI 中填写自己的 API ID/API Hash；静态校验通过后，使用 Android Keystore 的 AES-GCM 密钥加密并写入 noBackupFilesDir 下的应用私有文件。
+- 运行时凭证不得写入 Room、DataStore、SharedPreferences、日志、备份、公共存储或崩溃信息；加密文件不可读时必须失败关闭并要求重新输入。
 - 不得要求用户在聊天中粘贴真实 api_hash。
 - 不得在源码、文档、测试、提交或日志中出现真实凭证。
 - 不得记录验证码、两步验证密码、完整手机号、数据库密钥、会话数据或完整 TDLib 对象。
@@ -104,7 +107,7 @@ Compose UI → ViewModel → UseCase/Repository 接口 → Repository 实现 →
 
 新增任何权限必须先说明理由并获得用户确认。禁止联系人、短信、电话、麦克风、摄像头、位置、通知和广泛存储权限。
 
-Android 备份必须禁用，并同时用 dataExtractionRules/fullBackupContent 排除 TDLib 数据库、会话、本地密钥、媒体缓存、敏感 DataStore 和 Room 数据，覆盖云备份与设备迁移差异。
+Android 备份必须禁用，并同时用 dataExtractionRules/fullBackupContent 排除运行时 API 参数文件、TDLib 数据库、会话、本地密钥、媒体缓存、敏感 DataStore 和 Room 数据，覆盖云备份与设备迁移差异。
 
 ## 10. 测试与验证
 

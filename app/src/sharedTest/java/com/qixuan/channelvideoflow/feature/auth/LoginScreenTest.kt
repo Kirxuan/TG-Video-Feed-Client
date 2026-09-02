@@ -16,6 +16,7 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -183,7 +184,7 @@ class LoginScreenTest {
     }
 
     @Test
-    fun unconfiguredShowsOnlyInvalidConfigurationKeyNames() {
+    fun unconfiguredShowsCredentialInputsAndSanitizedValidation() {
         val state = mutableStateOf(
             LoginUiState(
                 LoginStep.UNCONFIGURED,
@@ -192,10 +193,51 @@ class LoginScreenTest {
         )
         render(state)
 
-        composeRule.onNodeWithText("未配置开发凭证").assertIsDisplayed()
-        composeRule.onNodeWithText("TELEGRAM_API_HASH, TELEGRAM_API_ID").assertIsDisplayed()
+        composeRule.onNodeWithText("配置你自己的 Telegram API").assertIsDisplayed()
+        composeRule.onNodeWithTag("login-credential-api-id").assertIsDisplayed()
+        composeRule.onNodeWithTag("login-credential-api-hash").performScrollTo().assertIsDisplayed()
+        composeRule.onNodeWithText(
+            "API ID 应为正整数；API Hash 应为 32 位十六进制字符。",
+        ).performScrollTo().assertIsDisplayed()
         assertNoTag("login-input")
         assertNoTag("login-password-input")
+    }
+
+    @Test
+    fun configuredCredentialInputsEmitOneIntentWithoutDisplayingHash() {
+        var apiId = ""
+        var apiHash = ""
+        var configureCalls = 0
+        val state = mutableStateOf(
+            LoginUiState(
+                step = LoginStep.UNCONFIGURED,
+                credentialApiId = "12345",
+                credentialApiHash = "0123456789abcdef0123456789abcdef",
+            ),
+        )
+        render(
+            state = state,
+            onCredentialApiIdChanged = {
+                apiId = it
+                state.value = state.value.copy(credentialApiId = it)
+            },
+            onCredentialApiHashChanged = {
+                apiHash = it
+                state.value = state.value.copy(credentialApiHash = it)
+            },
+            onConfigureCredentials = { configureCalls += 1 },
+        )
+
+        composeRule.onNodeWithTag("login-credential-api-id").performTextReplacement("54321")
+        composeRule.onNodeWithTag("login-credential-api-hash").performTextReplacement(
+            "fedcba9876543210fedcba9876543210",
+        )
+        composeRule.onNodeWithTag("login-configure-credentials").performScrollTo().performClick()
+
+        assertEquals("54321", apiId)
+        assertEquals("fedcba9876543210fedcba9876543210", apiHash)
+        assertEquals(1, configureCalls)
+        assertNoText("0123456789abcdef0123456789abcdef")
     }
 
     @Test
@@ -302,6 +344,9 @@ class LoginScreenTest {
     private fun render(
         state: MutableState<LoginUiState>,
         onInputChanged: (String) -> Unit = {},
+        onCredentialApiIdChanged: (String) -> Unit = {},
+        onCredentialApiHashChanged: (String) -> Unit = {},
+        onConfigureCredentials: () -> Unit = {},
         onSubmit: () -> Unit = {},
         onResendCode: () -> Unit = {},
         onRetry: () -> Unit = {},
@@ -313,6 +358,9 @@ class LoginScreenTest {
                 LoginScreen(
                     uiState = state.value,
                     onInputChanged = onInputChanged,
+                    onCredentialApiIdChanged = onCredentialApiIdChanged,
+                    onCredentialApiHashChanged = onCredentialApiHashChanged,
+                    onConfigureCredentials = onConfigureCredentials,
                     onSubmit = onSubmit,
                     onResendCode = onResendCode,
                     onRetry = onRetry,

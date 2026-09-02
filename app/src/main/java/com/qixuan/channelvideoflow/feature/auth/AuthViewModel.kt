@@ -42,6 +42,55 @@ class AuthViewModel @Inject constructor(
         }
     }
 
+    fun onCredentialApiIdChanged(value: String) {
+        if (mutableUiState.value.step != LoginStep.UNCONFIGURED) return
+        mutableUiState.update {
+            it.copy(
+                credentialApiId = value.filter(Char::isDigit),
+                invalidKeys = it.invalidKeys - "TELEGRAM_API_ID",
+                failure = null,
+            )
+        }
+    }
+
+    fun onCredentialApiHashChanged(value: String) {
+        if (mutableUiState.value.step != LoginStep.UNCONFIGURED) return
+        mutableUiState.update {
+            it.copy(
+                credentialApiHash = value.trim().take(32),
+                invalidKeys = it.invalidKeys - "TELEGRAM_API_HASH",
+                failure = null,
+            )
+        }
+    }
+
+    fun configureCredentials() {
+        val state = mutableUiState.value
+        if (!state.canConfigureCredentials) return
+
+        val apiId = state.credentialApiId
+        val apiHash = state.credentialApiHash
+        val actionEpoch = stateEpoch
+        mutableUiState.value = state.copy(
+            credentialApiHash = "",
+            isSubmitting = true,
+            failure = null,
+        )
+        viewModelScope.launch {
+            try {
+                repository.configureCredentials(apiId, apiHash)
+            } catch (cancellation: CancellationException) {
+                throw cancellation
+            } catch (_: Throwable) {
+                reportFailureIfActionStillOwnsUi(
+                    actionEpoch,
+                    LoginStep.UNCONFIGURED,
+                    requireSubmitting = true,
+                )
+            }
+        }
+    }
+
     fun submit() {
         val state = mutableUiState.value
         if (!state.canSubmit) return
@@ -142,6 +191,9 @@ class AuthViewModel @Inject constructor(
             retainedInput = current.input.takeIf {
                 authState.canRetainCurrentInput(current)
             }.orEmpty(),
+            retainedCredentialApiId = current.credentialApiId.takeIf {
+                authState is TelegramAuthState.UnconfiguredCredentials
+            }.orEmpty(),
         )
         mutableUiState.value = next
 
@@ -184,10 +236,15 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    private fun TelegramAuthState.toLoginUiState(retainedInput: String): LoginUiState = when (this) {
+    private fun TelegramAuthState.toLoginUiState(
+        retainedInput: String,
+        retainedCredentialApiId: String,
+    ): LoginUiState = when (this) {
         is TelegramAuthState.UnconfiguredCredentials -> LoginUiState(
             step = LoginStep.UNCONFIGURED,
+            credentialApiId = retainedCredentialApiId,
             invalidKeys = invalidKeys,
+            failure = failure,
         )
         TelegramAuthState.Initializing,
         TelegramAuthState.Closed,

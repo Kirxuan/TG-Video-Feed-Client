@@ -1,8 +1,8 @@
 # VELORA（曜流）架构设计
 
-文档版本：2.4
-日期：2026-08-30
-状态：Stage 23 已把初始频道索引替换为 TDLib 普通视频过滤搜索、Room v5 独立游标和批量页面事务；授权、播放器、缓存、品牌与权限边界未改变
+文档版本：2.5
+日期：2026-09-01
+状态：Stage 24 在既有授权边界内增加用户自行配置、Android Keystore 加密存储和凭证变更后的唯一 TDLib Client 安全重建；播放器、Room、缓存和权限边界未改变
 
 > 阶段 5 已新增 `player`、`TelegramFileManager`、`TelegramMediaDataSource` 和单例 `VideoPlayerManager`。阶段 6 以一个 `PlayerView` 和该唯一播放器驱动 `VerticalPager`。阶段 7 在稳定当前项之外只把逻辑下一项交给 `VideoPreloadManager`，请求 256KiB、优先级 8 的 TDLib 区间；当前播放仍为优先级 32 且不存在第二播放器。阶段 8 补齐音频焦点、耳机拔出策略、解码错误分类、播放器完整释放、受保护窗口标志和系统返回路径，并把启动期文件统计及设备信号读取移到显式 I/O dispatcher。阶段 9 修正已知文件长度的 Media3 返回语义，把范围等待从固定总截止改为 15 秒无进展截止加 90 秒硬上限，并使 owner 释放立即唤醒等待线程。阶段 10 增加不持久化的 Debug 播放会话指标，将初始加载、暂停和 seek 与真实 rebuffer 分开，并用真机基线验证缓冲前瞻及释放行为。阶段 11 在稳定绑定时刷新官方消息，从 `alternativeVideos` 中选择直接 H.264 服务端版本，并让当前播放与唯一下一条预加载共享同一质量策略。`TdLibMediaCacheManager` 继续使用官方精确存储统计和 `FileTypeVideo` 删除能力，以运行时 pin、Room v4 LRU 与 DataStore 配额限制唯一 TDLib 私有媒体缓存。
 
@@ -102,7 +102,7 @@
 
 ### 6.2 TelegramAuthRepository
 
-阶段 2 已实现 `TdLibTelegramAuthRepository`，经 Hilt 注入给 `AuthViewModel`；UI 只调用领域接口。当前已覆盖 TDLib 参数、手机号、验证码、密码、Ready、LoggingOut、Closing/Closed、未知授权步骤和脱敏失败（包括 FLOOD_WAIT）。这说明主机代码路径存在，不构成任何真实账号登录、会话恢复或退出成功的声明。
+阶段 2 已实现 `TdLibTelegramAuthRepository`，Stage 24 在同一接口新增 `configureCredentials(apiId, apiHash)`；它经 Hilt 注入给 `AuthViewModel`，UI 只调用领域接口。当前覆盖凭证格式/存储、TDLib 参数、手机号、验证码、密码、Ready、LoggingOut、Closing/Closed、未知授权步骤和脱敏失败（包括 FLOOD_WAIT）。这说明主机代码路径存在，不构成任何真实账号登录、会话恢复或退出成功的声明。
 
 领域接口提供：
 
@@ -115,7 +115,9 @@
 
 AuthState 是封闭集合：UnconfiguredCredentials、Initializing、WaitingPhoneNumber、WaitingCode、WaitingPassword、Authorized、LoggingOut、Closed、Error。错误保存脱敏类别和中文消息，不暴露 TDLib 对象。
 
-TDLib 首个状态 authorizationStateWaitTdlibParameters 触发私有目录参数设置。凭证、数据库目录和本地密钥只在数据层构造。授权成功、失败终止或取消后清除短期 code/password 引用。
+TDLib 首个状态 authorizationStateWaitTdlibParameters 触发私有目录参数设置。非 debug BuildConfig 凭证恒为空；`SecureTelegramCredentialsProvider` 优先读取 `noBackupFilesDir/credentials/telegram-api.v1` 的 AES-GCM 密文，debug 在密文不存在时才回退 `local.properties` 注入值。Keystore 密钥不可导出，密文带随机 IV、AAD 和版本边界。凭证、数据库目录和本地密钥只在数据层构造；API Hash 提交后从 UI 状态清除，code/password 的既有清除规则不变。
+
+若 TDLib 拒绝一组格式正确的参数，Repository 返回带脱敏失败的 `UnconfiguredCredentials`。使用者保存新参数后，唯一 `TelegramClientManager` 向旧 Client 发送 `Close`，等待其 `AuthorizationStateClosed`，清空旧 generation，再从安全存储读取新参数并创建唯一新 Client；不会并行保留两个可用 Client。
 
 ### 6.3 TelegramChatRepository
 
