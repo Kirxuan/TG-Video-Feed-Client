@@ -1,40 +1,205 @@
-# VELORA（曜流）
+<p align="center">
+  <img src="app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" width="112" alt="VELORA 应用图标">
+</p>
 
-> 曜流，让精彩自然流动。
-> VELORA — Let Content Flow.
+<h1 align="center">VELORA（曜流）</h1>
 
-VELORA（曜流）是一个原生 Android Telegram 频道视频浏览器。它使用用户自己的 Telegram 个人账号，通过官方 TDLib 读取用户本来就有权访问的频道，把普通视频消息建立为本地元数据索引，并提供频道、话题标签和播放顺序筛选的竖向视频流。
+<p align="center">
+  <strong>把散落在 Telegram 频道里的视频，重新汇成一条属于你的流。</strong><br>
+  曜流，让精彩自然流动。<br>
+  <sub>VELORA — Let Content Flow.</sub>
+</p>
 
-本项目由 **麒轩（Kirxuan）** 创建。它是非官方 Telegram 客户端，与 Telegram 官方没有隶属、认可或合作关系。
+<p align="center">
+  <a href="https://github.com/Kirxuan/TG-Video-Feed-Client/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/Kirxuan/TG-Video-Feed-Client?display_name=tag&sort=semver"></a>
+  <img alt="Android 8.0+" src="https://img.shields.io/badge/Android-8.0%2B-3DDC84?logo=android&logoColor=white">
+  <img alt="ARM64" src="https://img.shields.io/badge/ABI-arm64--v8a-6A5ACD">
+  <a href="LICENSE"><img alt="Apache License 2.0" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
+</p>
 
-## 项目定位
+<p align="center">
+  <a href="https://github.com/Kirxuan/TG-Video-Feed-Client/releases/latest"><strong>⬇️ 下载最新版 APK</strong></a>
+  ·
+  <a href="#三分钟开始使用">🚀 开始使用</a>
+  ·
+  <a href="#隐私不是一句口号">🛡️ 隐私设计</a>
+</p>
 
-- 面向个人使用；每位使用者自行申请并保管自己的 Telegram API 参数。
-- 仓库公开源代码；正式 release APK 永远不包含维护者或构建者的 Telegram API 参数，首次启动由使用者在设备上自行配置。
-- 只访问当前 Telegram 账号已有权限的内容，不扩大账号权限。
-- 不提供保存、导出、公共存储写入或内容保护绕过能力。
-- 不包含广告、统计、遥测、服务器或 Web 后台。
+---
 
-## 主要能力
+Telegram 里关注的频道越来越多，真正想看的视频却常常被聊天、转发和新消息冲散。
 
-- 官方 TDLib 个人账号授权，支持手机号、验证码和两步验证密码流程。
-- 发现、搜索和多选当前账号可访问的频道。
-- 使用 TDLib 视频过滤搜索建立 Room 本地索引，并支持断点恢复和增量同步。
-- 按频道和 hashtag 组合筛选；标签支持 OR/AND 语义。
-- 最新优先或随机轮次的竖向短视频信息流。
-- 单一 Media3 ExoPlayer，避免每页创建播放器。
-- 通过 TDLib `downloadFile(offset, limit)` 和自定义 Media3 DataSource 进行私有分段读取。
-- Telegram HLS、混合 ABR 和有界下一条预加载；移动数据默认不预加载。
-- 应用内部媒体缓存、可配置容量上限、账号退出清理和受保护内容 `FLAG_SECURE`。
-- 中英文品牌名、标语和创造者署名本地化。
+**VELORA（曜流）** 是一款原生 Android Telegram 频道视频浏览器。它使用你自己的 Telegram 个人账号和官方 TDLib，把你已经有权访问的频道视频整理为本地索引，再通过频道、话题标签和播放顺序，组成一条干净、连续、可筛选的竖向视频流。
 
-## 当前状态
+```text
+你已经加入的频道
+        ↓
+选择频道并建立本地索引
+        ↓
+用频道 + Hashtag 找到想看的内容
+        ↓
+上下滑动，连续播放
+```
 
-当前应用版本为 **1.1.0**，功能开发记录到 **Stage 24**。Stage 24 增加首次启动 API ID/API Hash 配置、Android Keystore AES-GCM 加密保存、损坏凭证恢复和凭证变更后的 TDLib 安全重建；所有非 debug 构建均强制排除本机 `local.properties` 中的值。
+它不是另一个内容平台，也不会把频道内容上传到项目自建服务。没有广告、推荐算法、统计埋点、遥测服务器和 Web 后台——**看到什么，由你的 Telegram 频道和你的选择决定。**
 
-Stage 24 的 1106 项主机测试、lint、debug/release 构建、release BuildConfig 空值、正式签名和 APK 本机凭证反向扫描已经通过。仓库所有者报告当前 1.1.0 在 ARM64 真机安装与正常使用通过；本次正式签名 APK 未由 Codex 连接设备重复安装，真实 Android Keystore instrumentation 与逐项登录证据仍标记为**尚未验证**。仓库所有者确认已取得 Telegram 对本次无 sponsored messages/广告发行的书面例外许可；许可文件不进入仓库。历史验证记录不是对所有设备和网络环境的保证；详见 [Stage 24 实施文档](docs/STAGE24_USER_CONFIGURED_CREDENTIALS.md)与[验收测试矩阵](docs/ACCEPTANCE_TESTS.md)。
+> VELORA 由 **麒轩（Kirxuan）** 创建，是非官方 Telegram 客户端，与 Telegram 官方没有隶属、认可或合作关系。每位使用者需要自行申请并妥善保管 Telegram API 参数。
 
-## 技术栈与边界
+## 界面一览
+
+<p align="center">
+  <a href="docs/images/channel-selection.png"><img src="docs/images/channel-selection.png" width="31%" alt="VELORA 频道选择界面"></a>
+  <a href="docs/images/tag-filter.png"><img src="docs/images/tag-filter.png" width="31%" alt="VELORA 标签筛选界面"></a>
+  <a href="docs/images/vertical-video-feed.png"><img src="docs/images/vertical-video-feed.png" width="31%" alt="VELORA 竖向视频流界面"></a>
+</p>
+
+<p align="center">
+  <sub>频道选择 · 标签筛选 · 竖向视频流（点击图片查看大图）</sub>
+</p>
+
+> 截图来自项目 UI 验收流程。频道名、用户名、标签、数量与视频说明均为脱敏测试数据；视频画面使用无人物、无文字、无品牌的合成示例背景，不包含真实 Telegram 频道内容。
+
+## 为什么你可能会喜欢它
+
+### 一次看完多个频道
+
+不用在频道列表里来回跳转。多选你关心的频道，VELORA 会把其中的普通视频消息建立为本地元数据索引，之后新增、编辑或删除的消息也会继续同步。
+
+### 用标签把内容变成自己的专题
+
+想只看某个主题？直接组合频道与 Hashtag。频道之间使用 OR，标签支持 OR/AND 两种模式，中文、英文及 Unicode 标签都能参与筛选。
+
+### 像刷短视频一样自然，但内容仍属于 Telegram
+
+最新优先或随机播放，上下滑动切换视频；当前页面自动播放，离开的页面立即停止。需要回到上下文时，还可以打开 Telegram 原消息。
+
+### 在画质、流量与等待之间自己做决定
+
+提供自动、省流、720p 和原画偏好；通过 TDLib 分段读取可流式播放的视频，并在网络与设备状态允许时有界预加载下一条。移动数据下默认关闭预加载，不会悄悄把一长串视频提前下载。
+
+### 私人账号工具，就应该保持克制
+
+视频只留在应用内部缓存，不写入相册或公共目录；缓存上限可选，退出账号会清理账号相关索引与媒体。受保护内容不提供保存、导出或分享入口。
+
+## 功能一览
+
+| 你想做的事 | VELORA 提供的能力 |
+|---|---|
+| 登录自己的 Telegram | 官方 TDLib 个人账号授权，支持手机号、验证码和两步验证 |
+| 找到想看的频道 | 发现、搜索、多选当前账号已有权访问的频道 |
+| 整理频道视频 | TDLib 视频过滤搜索、本地 Room 元数据索引、断点恢复与增量同步 |
+| 精准筛选 | 频道组合、Hashtag 多选、标签 OR/AND 语义 |
+| 连续浏览 | 原生 Compose 竖向信息流、最新优先或随机轮次 |
+| 控制播放 | 暂停、静音、重播设置、打开 Telegram 原消息 |
+| 适应不同网络 | 自动/省流/720p/原画偏好、分段读取、有界下一条预加载 |
+| 管理占用空间 | 200MB 至 20GB 可选缓存上限、占用统计、一键清理 |
+| 保护私密数据 | Android Keystore AES-GCM、应用私有目录、禁用备份、Release 关闭详细日志 |
+
+## 它适合谁
+
+VELORA 可能很适合你，如果你：
+
+- 已经关注了不少以视频为主的 Telegram 频道；
+- 希望按频道或 Hashtag 重组内容，而不是被消息时间线牵着走；
+- 喜欢竖向滑动的浏览方式，但不想引入新的账号、广告或推荐算法；
+- 愿意使用自己的 Telegram API ID/API Hash，并重视凭证与媒体的本地存储边界；
+- 使用 Android 8.0 或更高版本的 ARM64 手机。
+
+它目前可能不适合你，如果你需要 iOS、x86/32 位 Android、多账号同时在线、视频下载/导出、Stories、直播、机器人账号，或完全不想自行申请 Telegram API 参数。当前功能界面以简体中文为主。
+
+## 三分钟开始使用
+
+### 1. 下载并安装
+
+前往 [GitHub Releases](https://github.com/Kirxuan/TG-Video-Feed-Client/releases/latest) 下载最新版正式签名 APK，并安装到 **ARM64、Android 8.0（API 26）或更高版本**的设备。
+
+如果系统提示“未知来源应用”，请只为你用来下载 APK 的可信浏览器或文件管理器授予本次安装权限。建议从本仓库 Release 页面获取安装包，不要使用来源不明的二次打包版本。
+
+当前 v1.1.0 安装包为 `VELORA-1.1.0-arm64-v8a.apk`，SHA-256：
+
+```text
+ACFD472C3EAC18E63C1B746B2ABD0602D3C7D3CC3BFA611A3CE75A27B6723061
+```
+
+如果设备上曾安装 Android Debug 证书签名的开发版，需要先卸载旧版再安装正式版；卸载会同时清除旧版的本地登录、索引和缓存。后续版本请始终以对应 Release 页面公布的文件名和校验值为准。
+
+### 2. 申请自己的 Telegram API 参数
+
+用浏览器登录 [my.telegram.org](https://my.telegram.org/)，进入 **API development tools**，申请自己的 API ID 和 API Hash。
+
+> API Hash 相当于敏感凭证。不要把真实值粘贴到 Issue、Pull Request、日志、群聊或任何公开页面；本项目也不会要求你在聊天中提供它。
+
+### 3. 在 VELORA 中完成首次配置
+
+首次启动后，在设备界面填写 API ID 和 API Hash。格式校验通过后，它们会由 Android Keystore 设备密钥进行 AES-GCM 加密，并保存到不可备份的应用私有目录。
+
+接下来按界面完成手机号、验证码及两步验证密码流程。验证码和两步验证密码不会持久化。
+
+### 4. 选择频道，开始流动
+
+选择一个或多个频道，等待应用建立视频元数据索引；随后可以挑选 Hashtag、设置标签 OR/AND 模式与播放顺序，然后进入视频流上下滑动。
+
+## 隐私不是一句口号
+
+VELORA 的隐私边界尽量做到简单、明确、可检查：
+
+- **只申请两项权限：** `INTERNET` 与 `ACCESS_NETWORK_STATE`；
+- **不申请敏感权限：** 不读取联系人、短信、电话、麦克风、摄像头、位置、通知或公共存储；
+- **没有第三方追踪：** 不包含广告、分析、统计、遥测 SDK 或项目自建服务器；
+- **凭证不随 APK 分发：** 正式 Release 不包含维护者或构建者的 Telegram API 参数；
+- **敏感输入不持久化：** 验证码与两步验证密码只在授权流程所需的内存生命周期内存在；
+- **数据留在应用内：** TDLib 会话、Room 索引、设置与媒体缓存都位于应用私有目录，并被排除在 Android 备份与设备迁移之外；
+- **尊重内容保护：** 视频不写入 MediaStore、Downloads、DCIM 或 Movies；受保护内容按策略启用 `FLAG_SECURE`；
+- **退出就是退出：** 停止请求和播放，并清理账号相关索引、会话与媒体缓存。
+
+完整威胁边界与剩余风险请阅读[安全设计](docs/SECURITY.md)。已 Root、被恶意调试或系统完整性失守的设备不在本项目能够完全防护的范围内。
+
+## 当前版本与验证状态
+
+当前版本为 **VELORA 1.1.0**，功能开发记录到 **Stage 24**。
+
+Stage 24 完成了公开发行所需的用户自行配置路径：所有非 debug 构建强制排除本机 `local.properties` 凭证，设备端参数使用 Android Keystore AES-GCM 加密；密文损坏会失败关闭并要求重新输入，凭证改变时会安全关闭并重建唯一 TDLib Client。
+
+<details>
+<summary><strong>查看 1.1.0 验证证据与尚未验证项</strong></summary>
+
+- 1106/1106 项主机测试通过，lint、debug/release 构建通过。
+- Release BuildConfig 凭证为空；正式签名 APK 与 Git 跟踪文件的本机真实凭证反向扫描均为零命中。
+- 正式签名、`zipalign`、APK Signature Scheme v2/v3、权限、备份规则与 ARM64 ABI 静态 Proof 均通过。
+- 仓库所有者报告 1.1.0 已在 ARM64 真机安装并正常使用。
+- Codex 未连接设备重复安装本次正式签名 APK；真实 Android Keystore instrumentation 与真实账号逐项登录证据仍为**尚未验证**。
+- 历史验证不能保证所有 Telegram 账号、频道、设备和网络环境均表现一致。
+
+详见 [Stage 24 实施与验证记录](docs/STAGE24_USER_CONFIGURED_CREDENTIALS.md)和[验收测试矩阵](docs/ACCEPTANCE_TESTS.md)。
+
+</details>
+
+仓库所有者确认已取得 Telegram 对本次无 sponsored messages/广告发行的书面例外许可；许可文件与账户信息不进入仓库，项目文档不公开其敏感内容。
+
+## 工作原理
+
+VELORA 坚持原生 Android 与清晰的数据边界：
+
+```text
+Jetpack Compose UI
+        ↓
+ViewModel
+        ↓
+UseCase / Repository 接口
+        ↓
+Repository 实现
+        ↓
+TDLib / Room / Media3 适配器
+```
+
+- UI 不直接使用 TDLib、Room DAO，也不创建 ExoPlayer；
+- TDLib 类型、回调和错误不会越过 `telegram` 模块边界；
+- 全局只保留一个主要 Media3 ExoPlayer 发声，播放器数量不随页面增长；
+- `DataSpec.position/length` 会转换为 TDLib `downloadFile(offset, limit)` 区间请求；
+- 当前播放与唯一下一条预加载使用所有权令牌保护，快速滑动会取消已经过期的请求；
+- Room 只保存频道、视频、标签、游标与播放历史等元数据，不保存视频字节或授权凭证。
+
+### 技术栈
 
 - Kotlin、Jetpack Compose、Material 3
 - Coroutines、Flow、Hilt
@@ -42,43 +207,18 @@ Stage 24 的 1106 项主机测试、lint、debug/release 构建、release BuildC
 - AndroidX Media3 ExoPlayer
 - Telegram 官方 TDLib 1.8.66
 - Gradle Kotlin DSL 与 Version Catalog
-- minSdk 26；当前 native 产物只包含 `arm64-v8a`
+- minSdk 26；当前生产 native 产物仅包含 `arm64-v8a`
 
-依赖方向固定为：
+## 从源代码构建
 
-```text
-Compose UI
-    ↓
-ViewModel
-    ↓
-UseCase / Repository 接口
-    ↓
-Repository 实现
-    ↓
-TDLib / Room / Media3 适配器
-```
-
-UI 不直接使用 TDLib、Room DAO 或创建 ExoPlayer。TDLib 类型不会越过 `telegram` 模块的数据边界；视频字节只位于应用内部缓存，Room 只保存元数据。
-
-## 构建要求
+### 构建环境
 
 - Android Studio 与 JDK 21（可直接使用 Android Studio 自带 JBR）
 - Android SDK 36.1，以及 Gradle 同步时提示的构建工具
 - ARM64 Android 设备，Android 8.0（API 26）或更高版本
 - 自己在 [my.telegram.org](https://my.telegram.org/) 申请的 Telegram API ID 和 API Hash
-- Windows 是当前 TDLib 重建脚本的主要已验证主机；仓库已经包含可追溯的 ARM64 TDLib Java/JNI 产物
 
-## 使用正式免凭证 APK
-
-正式 APK 发布在 GitHub Releases。安装后：
-
-1. 用浏览器登录 [my.telegram.org](https://my.telegram.org/)，进入 **API development tools**，申请自己的 API ID 和 API Hash。
-2. 首次启动 VELORA，在应用界面填写这两个值。
-3. 应用完成本机加密保存后，继续按界面输入手机号、验证码和两步验证密码。
-
-API 参数使用 Android Keystore 的设备密钥进行 AES-GCM 加密，并保存在不可备份的应用私有目录。验证码和两步验证密码不会持久化。
-
-## 从源代码构建
+Windows 是当前 TDLib 重建脚本的主要已验证主机；仓库已包含有来源记录与哈希验证的 ARM64 TDLib Java/JNI 产物。
 
 ### 1. 克隆仓库
 
@@ -89,7 +229,7 @@ cd TG-Video-Feed-Client
 
 ### 2. 配置 Android SDK
 
-用 Android Studio 打开仓库并完成 Gradle Sync。Android Studio 通常会在仓库根目录生成 `local.properties` 并写入本机 `sdk.dir`。
+使用 Android Studio 打开仓库并完成 Gradle Sync。Android Studio 通常会在仓库根目录生成 `local.properties` 并写入本机 `sdk.dir`。
 
 ### 3. 可选：配置开发用 Telegram 凭证
 
@@ -100,7 +240,7 @@ TELEGRAM_API_ID=<your_api_id>
 TELEGRAM_API_HASH=<your_api_hash>
 ```
 
-不要把真实值粘贴到 Issue、Pull Request、日志或聊天中。`local.properties` 已被 Git 忽略；可提交的 [secrets.defaults.properties](secrets.defaults.properties) 只有空白默认值。
+`local.properties` 已被 Git 忽略；可提交的 [secrets.defaults.properties](secrets.defaults.properties) 只有空白默认值。
 
 这一步只为本机 debug 开发构建提供便捷回退。`release`、`instrumentation` 及其他非 debug 构建会强制把 BuildConfig 凭证置空，即使 `local.properties` 中有值也不会注入；它们统一使用首次启动的设备端配置流程。
 
@@ -131,19 +271,16 @@ adb devices
 
 不要在自动化测试中使用真实 Telegram 账号、验证码、密码或 API Hash。
 
-## 隐私与安全
+## 已知边界
 
-- Manifest 有效权限仅为 `INTERNET` 和 `ACCESS_NETWORK_STATE`。
-- Android 备份和设备迁移备份均被禁用/排除。
-- TDLib 会话、数据库、Room、DataStore 和媒体缓存都保留在应用私有目录。
-- 使用者填写的 API ID/API Hash 由 Android Keystore 的 AES-GCM 密钥加密，密文位于 `noBackupFilesDir`，不进入 Room/DataStore/SharedPreferences。
-- 视频不写入 MediaStore、Downloads、DCIM 或 Movies。
-- 受保护内容不提供保存/分享入口，播放时按策略启用 `FLAG_SECURE`。
-- Release 关闭详细调试日志，项目不包含分析或遥测 SDK。
+- 第一版只播放支持流式传输的普通 `messageVideo`；不支持流式的视频不会自动完整下载，并会提示“该视频暂不支持流式播放。”
+- 只支持当前账号已经有权访问的频道，不扩大账号权限，也不会绕过已失效或受保护内容。
+- 当前仅提供 ARM64 Android 产物，不支持 x86、32 位 Android 或 iOS。
+- 当前只保留一个 Telegram 账号会话；退出后可以登录另一个账号，但不并行保存多账号会话。
+- 不支持 Bot API、手写 MTProto、Stories、直播、视频留言、付费媒体、视频上传、评论、转发、保存或导出。
+- 当前通过 GitHub Release 提供 APK，未在 Google Play 或其他应用商店上架。
 
-发现安全问题时请先阅读[安全设计与报告方式](docs/SECURITY.md)，不要在公开 Issue 中附带凭证、手机号、验证码、密码、会话文件、私有路径或 Telegram 内容。
-
-## 文档
+## 文档导航
 
 - [产品规格](docs/PRODUCT_SPEC.md)
 - [架构设计](docs/ARCHITECTURE.md)
@@ -158,7 +295,9 @@ adb devices
 
 ## 参与贡献
 
-Issue 和 Pull Request 欢迎用于缺陷修复、安全改进、文档完善和符合现有边界的功能建议。开始前请阅读 [CONTRIBUTING.md](CONTRIBUTING.md) 与 [AGENTS.md](AGENTS.md)。
+欢迎通过 Issue 和 Pull Request 提交缺陷修复、安全改进、文档完善，以及符合现有隐私和内容保护边界的功能建议。开始前请阅读 [CONTRIBUTING.md](CONTRIBUTING.md) 与 [AGENTS.md](AGENTS.md)。
+
+如果 VELORA 正好解决了你的需求，欢迎在 GitHub 点一个 ⭐，也欢迎把真实设备与网络环境下的脱敏体验反馈给项目。
 
 ## 许可证
 
